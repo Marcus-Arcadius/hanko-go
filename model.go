@@ -1,9 +1,5 @@
 package hankoApiClient
 
-import (
-	"github.com/google/uuid"
-)
-
 type Operation string
 
 const (
@@ -25,7 +21,7 @@ type AuthenticatorSelectionCriteria struct {
 type Request struct {
 	Operation                      Operation                       `json:"operation"`
 	Username                       string                          `json:"username"`
-	UserId                         uuid.UUID                       `json:"userId"`
+	UserId                         string                       `json:"userId"`
 	ClientData                     *ClientData                     `json:"clientData"`
 	DeviceIds                      *[]string                       `json:"deviceIds"`
 	AuthenticatorSelectionCriteria *AuthenticatorSelectionCriteria `json:"authenticatorSelectionCriteria"`

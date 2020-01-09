@@ -20,6 +20,46 @@ func NewHankoApiClient(baseUrl string, secret string) *HankoApiClient {
 	}
 }
 
+func (client *HankoApiClient) InitWebauthnRegistration(userId string, userName string) (*Response,error){
+	req := &Request{
+		Operation: REG,
+		Username:  userName,
+		UserId:    userId,
+	}
+	return client.InitOperation("/webauthn/requests",req)
+}
+
+func (client *HankoApiClient) InitWebAuthnAuthentication(userId string, userName string) (*Response, error) {
+	req := &Request{
+		Operation:                      AUTH,
+		Username:                       userName,
+		UserId:                         userId,
+	}
+	return client.InitOperation("/webauthn/requests", req)
+}
+
+func (client *HankoApiClient) InitWebAuthnDeRegistration(userId string, userName string) (*Response, error){
+	req := &Request{
+		Operation:                      DEREG,
+		Username:                       userName,
+		UserId:                         userId,
+	}
+	return client.InitOperation("/webauthn/requests", req)
+}
+
+func (client *HankoApiClient) FinalizeWebAuthnOperation(requestId string, request *Request) (*Response,error) {
+	return client.FinalizeOperation("/webauthn/requests", requestId, request)
+}
+
+func (client *HankoApiClient) InitOperation(path string, request *Request) (*Response, error) {
+	return client.Request(http.MethodPost, path, request)
+}
+
+func (client *HankoApiClient) FinalizeOperation(path string, requestId string, request *Request) (*Response, error) {
+	return client.Request(http.MethodPut, path + "/" + requestId, request)
+}
+
+// Request does a generic Request to the Hanko API
 func (client *HankoApiClient) Request(method string, path string, request interface{}) (*Response, error) {
 	buf := new(bytes.Buffer)
 	if request != nil {
