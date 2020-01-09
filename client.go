@@ -48,7 +48,7 @@ func (client *HankoApiClient) InitWebAuthnDeRegistration(userId string, userName
 	return client.InitOperation("/webauthn/requests", req)
 }
 
-func (client *HankoApiClient) FinalizeWebAuthnOperation(requestId string, request *Request) (*Response,error) {
+func (client *HankoApiClient) FinalizeWebAuthnOperation(requestId string, request *HankoCredentialRequest) (*Response,error) {
 	return client.FinalizeOperation("/webauthn/requests", requestId, request)
 }
 
@@ -62,7 +62,7 @@ func (client *HankoApiClient) InitOperation(path string, request *Request) (*Res
 	return client.Request(http.MethodPost, path, request)
 }
 
-func (client *HankoApiClient) FinalizeOperation(path string, requestId string, request *Request) (*Response, error) {
+func (client *HankoApiClient) FinalizeOperation(path string, requestId string, request *HankoCredentialRequest) (*Response, error) {
 	return client.Request(http.MethodPut, path + "/" + requestId, request)
 }
 
