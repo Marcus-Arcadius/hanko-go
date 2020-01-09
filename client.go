@@ -20,6 +20,7 @@ func NewHankoApiClient(baseUrl string, secret string) *HankoApiClient {
 	}
 }
 
+// WEBAUTHN ------------------------------------------------------------------------------------------------------------
 func (client *HankoApiClient) InitWebauthnRegistration(userId string, userName string) (*Response,error){
 	req := &Request{
 		Operation: REG,
@@ -50,6 +51,12 @@ func (client *HankoApiClient) InitWebAuthnDeRegistration(userId string, userName
 func (client *HankoApiClient) FinalizeWebAuthnOperation(requestId string, request *Request) (*Response,error) {
 	return client.FinalizeOperation("/webauthn/requests", requestId, request)
 }
+
+// UAF -----------------------------------------------------------------------------------------------------------------
+
+// TODO
+
+// GENERIC -------------------------------------------------------------------------------------------------------------
 
 func (client *HankoApiClient) InitOperation(path string, request *Request) (*Response, error) {
 	return client.Request(http.MethodPost, path, request)
