@@ -54,7 +54,27 @@ func (client *HankoApiClient) FinalizeWebAuthnOperation(requestId string, reques
 
 // UAF -----------------------------------------------------------------------------------------------------------------
 
-// TODO
+func (c *HankoApiClient) InitUAFRegistration(userName string, userId string) (*Response, error) {
+	req := &Request{
+		Operation:                      REG,
+		Username:                       userName,
+		UserId:                         userId,
+	}
+	return c.InitOperation("/uaf/requests", req)
+}
+
+func (c *HankoApiClient) InitUAFAuthentication(userName string, userId string) (*Response, error) {
+	req := &Request{
+		Operation:                      AUTH,
+		Username:                       userName,
+		UserId:                         userId,
+	}
+	return c.InitOperation("/uaf/requests", req)
+}
+
+func (c *HankoApiClient) GetUafRequestStatus(requestId string) (*Response, error)  {
+	return c.GetRequestStatus("/uaf/requests", requestId)
+}
 
 // GENERIC -------------------------------------------------------------------------------------------------------------
 
@@ -64,6 +84,10 @@ func (client *HankoApiClient) InitOperation(path string, request *Request) (*Res
 
 func (client *HankoApiClient) FinalizeOperation(path string, requestId string, request *HankoCredentialRequest) (*Response, error) {
 	return client.Request(http.MethodPut, path + "/" + requestId, request)
+}
+
+func (client *HankoApiClient) GetRequestStatus(path string, requestId string) (*Response,error) {
+	return client.Request(http.MethodGet, path + "/" + requestId, nil)
 }
 
 // Request does a generic Request to the Hanko API
