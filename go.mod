@@ -1,4 +1,4 @@
-module github.com/teamhanko/hankoapiclientgo
+module github.com/teamhanko/hanko-sdk-golang
 
 go 1.13
 
