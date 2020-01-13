@@ -21,7 +21,7 @@ type AuthenticatorSelectionCriteria struct {
 type Request struct {
 	Operation                      Operation                       `json:"operation"`
 	Username                       string                          `json:"username"`
-	UserId                         string                       `json:"userId"`
+	UserId                         string                          `json:"userId"`
 	ClientData                     *ClientData                     `json:"clientData"`
 	DeviceIds                      *[]string                       `json:"deviceIds"`
 	AuthenticatorSelectionCriteria *AuthenticatorSelectionCriteria `json:"authenticatorSelectionCriteria"`
