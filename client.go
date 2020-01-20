@@ -95,6 +95,15 @@ func (client *HankoApiClient) InitUafAuthentication(userName string, userId stri
 	return client.InitOperation("/"+client.apiVersion+"/uaf/requests", req)
 }
 
+func (client *HankoApiClient) InitUafDeRegistration(userId string, userName string) (*Response, error) {
+	req := &Request{
+		Operation: DEREG,
+		Username:  userName,
+		UserId:    userId,
+	}
+	return client.InitOperation("/"+client.apiVersion+"/uaf/requests", req)
+}
+
 func (client *HankoApiClient) GetUafRequestStatus(requestId string) (*Response, error) {
 	return client.GetRequestStatus("/"+client.apiVersion+"/uaf/requests", requestId)
 }
