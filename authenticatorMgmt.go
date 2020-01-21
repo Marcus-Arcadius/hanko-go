@@ -46,12 +46,12 @@ type AuthenticatorRename struct {
 }
 
 // GetAuthenticators returns a list of Authenticators for a given user
-func (client *HankoApiClient) GetAuthenticators(userId string) (AuthenticatorDevices, error) {
+func (client *HankoApiClient) GetAuthenticators(userId string) (*AuthenticatorDevices, error) {
 	resp, err := client.doRequest(http.MethodGet, "/mgmt/v1/registrations/"+userId, nil)
 	if err != nil {
 		return nil, errors.Wrap(err, "Could not do Request to get Authenticator Devices.")
 	}
-	apiResp := AuthenticatorDevices{}
+	apiResp := &AuthenticatorDevices{}
 	dec := json.NewDecoder(resp.Body)
 	err = dec.Decode(apiResp)
 	if err != nil {
