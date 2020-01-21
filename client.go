@@ -34,6 +34,10 @@ func (client *HankoApiClient) InitWebauthnRegistration(userId string, userName s
 		Operation: REG,
 		Username:  userName,
 		UserId:    userId,
+		AuthenticatorSelectionCriteria: &AuthenticatorSelectionCriteria{
+			UserVerification:        "preferred",
+			AuthenticatorAttachment: "platform",
+		},
 	}
 	return client.InitOperation("/"+client.apiVersion+"/webauthn/requests", req)
 }
@@ -85,6 +89,15 @@ func (client *HankoApiClient) InitUafRegistration(userName string, userId string
 func (client *HankoApiClient) InitUafAuthentication(userName string, userId string) (*Response, error) {
 	req := &Request{
 		Operation: AUTH,
+		Username:  userName,
+		UserId:    userId,
+	}
+	return client.InitOperation("/"+client.apiVersion+"/uaf/requests", req)
+}
+
+func (client *HankoApiClient) InitUafDeRegistration(userId string, userName string) (*Response, error) {
+	req := &Request{
+		Operation: DEREG,
 		Username:  userName,
 		UserId:    userId,
 	}
