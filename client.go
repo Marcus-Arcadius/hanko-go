@@ -77,7 +77,7 @@ func (client *HankoApiClient) GetWebauthnRequestStatus(requestId string) (*Respo
 
 // UAF -----------------------------------------------------------------------------------------------------------------
 
-func (client *HankoApiClient) InitUafRegistration(userName string, userId string) (*Response, error) {
+func (client *HankoApiClient) InitUafRegistration(userId string, userName string) (*Response, error) {
 	req := &Request{
 		Operation: REG,
 		Username:  userName,
@@ -86,7 +86,7 @@ func (client *HankoApiClient) InitUafRegistration(userName string, userId string
 	return client.InitOperation("/"+client.apiVersion+"/uaf/requests", req)
 }
 
-func (client *HankoApiClient) InitUafAuthentication(userName string, userId string) (*Response, error) {
+func (client *HankoApiClient) InitUafAuthentication(userId string, userName string) (*Response, error) {
 	req := &Request{
 		Operation: AUTH,
 		Username:  userName,
