@@ -42,10 +42,6 @@ func (client *HankoApiClient) InitWebauthnRegistration(userId string, userName s
 		Operation: REG,
 		Username:  userName,
 		UserId:    userId,
-		AuthenticatorSelectionCriteria: &AuthenticatorSelectionCriteria{
-			UserVerification:        "preferred",
-			AuthenticatorAttachment: "platform",
-		},
 	}
 	return client.InitOperation(client.GetWebAuthnUrl(), req)
 }
