@@ -24,6 +24,14 @@ func NewHankoApiClient(baseUrl string, secret string) *HankoApiClient {
 	}
 }
 
+func (client *HankoApiClient) GetUafRequestStatus(requestId string) (*Response, error) {
+	return client.GetRequestStatus(client.GetUafUrl(), requestId)
+}
+
+func (client *HankoApiClient) GetWebAuthnUrl() (url string) {
+	return "/"+client.apiVersion+"/webauthn/requests"
+}
+
 // WEBAUTHN ------------------------------------------------------------------------------------------------------------
 
 // InitWebauthnRegistration initiates the Registration of an Authenticator. Pass the result from the Hanko API to the
@@ -39,7 +47,7 @@ func (client *HankoApiClient) InitWebauthnRegistration(userId string, userName s
 			AuthenticatorAttachment: "platform",
 		},
 	}
-	return client.InitOperation("/"+client.apiVersion+"/webauthn/requests", req)
+	return client.InitOperation(client.GetWebAuthnUrl(), req)
 }
 
 // InitWebAuthnAuthentication initiates the Authentication Flow. Pass the challenge from the Hanko API to the
@@ -51,7 +59,7 @@ func (client *HankoApiClient) InitWebAuthnAuthentication(userId string, userName
 		Username:  userName,
 		UserId:    userId,
 	}
-	return client.InitOperation("/"+client.apiVersion+"/webauthn/requests", req)
+	return client.InitOperation(client.GetWebAuthnUrl(), req)
 }
 
 // InitWebAuthnDeRegistration de-registers an Authenticator Device. This Operation doesn't need to be finalized.
@@ -61,18 +69,18 @@ func (client *HankoApiClient) InitWebAuthnDeRegistration(userId string, userName
 		Username:  userName,
 		UserId:    userId,
 	}
-	return client.InitOperation("/"+client.apiVersion+"/webauthn/requests", req)
+	return client.InitOperation(client.GetWebAuthnUrl(), req)
 }
 
 // FinalizeWebAuthnOperation Is the last step to either Register or Authenticate an WebAuthn Request. Pass the result of
 // the WebAuthn API call of the Browser to this method.
 func (client *HankoApiClient) FinalizeWebAuthnOperation(requestId string, request *HankoCredentialRequest) (*Response, error) {
-	return client.FinalizeOperation("/"+client.apiVersion+"/webauthn/requests", requestId, request)
+	return client.FinalizeOperation(client.GetWebAuthnUrl(), requestId, request)
 }
 
 // GetWebauthnRequestStatus Returns a status Response of a running request
 func (client *HankoApiClient) GetWebauthnRequestStatus(requestId string) (*Response, error) {
-	return client.GetRequestStatus("/"+client.apiVersion+"/webauthn/requests", requestId)
+	return client.GetRequestStatus(client.GetWebAuthnUrl(), requestId)
 }
 
 // UAF -----------------------------------------------------------------------------------------------------------------
@@ -83,7 +91,7 @@ func (client *HankoApiClient) InitUafRegistration(userId string, userName string
 		Username:  userName,
 		UserId:    userId,
 	}
-	return client.InitOperation("/"+client.apiVersion+"/uaf/requests", req)
+	return client.InitOperation(client.GetUafUrl(), req)
 }
 
 func (client *HankoApiClient) InitUafAuthentication(userId string, userName string) (*Response, error) {
@@ -92,7 +100,7 @@ func (client *HankoApiClient) InitUafAuthentication(userId string, userName stri
 		Username:  userName,
 		UserId:    userId,
 	}
-	return client.InitOperation("/"+client.apiVersion+"/uaf/requests", req)
+	return client.InitOperation(client.GetUafUrl(), req)
 }
 
 func (client *HankoApiClient) InitUafDeRegistration(userId string, userName string) (*Response, error) {
@@ -104,8 +112,8 @@ func (client *HankoApiClient) InitUafDeRegistration(userId string, userName stri
 	return client.InitOperation("/"+client.apiVersion+"/uaf/requests", req)
 }
 
-func (client *HankoApiClient) GetUafRequestStatus(requestId string) (*Response, error) {
-	return client.GetRequestStatus("/"+client.apiVersion+"/uaf/requests", requestId)
+func (client *HankoApiClient) GetUafUrl() (url string) {
+	return "/"+client.apiVersion+"/uaf/requests"
 }
 
 // GENERIC -------------------------------------------------------------------------------------------------------------
@@ -159,3 +167,5 @@ func (client *HankoApiClient) doRequest(method string, path string, request inte
 	}
 	return resp, nil
 }
+
+
