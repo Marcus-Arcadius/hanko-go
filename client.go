@@ -24,12 +24,12 @@ func NewHankoApiClient(baseUrl string, secret string) *HankoApiClient {
 	}
 }
 
-func (client *HankoApiClient) GetUafRequestStatus(requestId string) (*Response, error) {
-	return client.GetRequestStatus(client.GetUafUrl(), requestId)
-}
-
 func (client *HankoApiClient) GetWebAuthnUrl() (url string) {
 	return "/"+client.apiVersion+"/webauthn/requests"
+}
+
+func (client *HankoApiClient) GetUafUrl() (url string) {
+	return "/"+client.apiVersion+"/uaf/requests"
 }
 
 // WEBAUTHN ------------------------------------------------------------------------------------------------------------
@@ -105,11 +105,11 @@ func (client *HankoApiClient) InitUafDeRegistration(userId string, userName stri
 		Username:  userName,
 		UserId:    userId,
 	}
-	return client.InitOperation("/"+client.apiVersion+"/uaf/requests", req)
+	return client.InitOperation(client.GetUafUrl(), req)
 }
 
-func (client *HankoApiClient) GetUafUrl() (url string) {
-	return "/"+client.apiVersion+"/uaf/requests"
+func (client *HankoApiClient) GetUafRequestStatus(requestId string) (*Response, error) {
+	return client.GetRequestStatus(client.GetUafUrl(), requestId)
 }
 
 // GENERIC -------------------------------------------------------------------------------------------------------------
