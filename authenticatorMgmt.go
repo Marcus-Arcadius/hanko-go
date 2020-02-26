@@ -63,7 +63,7 @@ func (client *HankoApiClient) GetAuthenticators(userId string) (*AuthenticatorDe
 
 // RenameAuthenticator renames an Authenticator with the given Id
 func (client *HankoApiClient) RenameAuthenticator(deviceId string, rename AuthenticatorRename) (*AuthenticatorRename, error) {
-	resp, err := client.doRequest(http.MethodGet, "/mgmt/v1/registrations/rename/"+deviceId, rename)
+	resp, err := client.doRequest(http.MethodPost, "/mgmt/v1/registrations/rename/"+deviceId, rename)
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, errors.Errorf("hankoApi returned status code: %d", resp.StatusCode)
