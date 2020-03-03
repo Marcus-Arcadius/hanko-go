@@ -34,6 +34,7 @@ func (a AuthenticatorDevices) FilterDuplicateTypes() AuthenticatorDevices {
 	for _, v := range a {
 		if !types[v.AuthenticatorType][v.AuthenticatorAttachment] {
 			aa = append(aa, v)
+			types[v.AuthenticatorType] = map[string]bool{}
 			types[v.AuthenticatorType][v.AuthenticatorAttachment] = true
 			n++
 		}
