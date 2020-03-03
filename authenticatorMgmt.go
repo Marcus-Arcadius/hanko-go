@@ -13,6 +13,7 @@ type AuthenticatorDevice struct {
 	DeviceId          string    `json:"deviceId"`
 	KeyName           string    `json:"keyName"`
 	AuthenticatorType string    `json:"authenticatorType"`
+	AuthenticatorAttachment string `json:"authenticatorAttachment"`
 	LastUsage         time.Time `json:"lastUsage"`
 	CreatedAt         time.Time `json:"createdAt"`
 }
@@ -27,17 +28,17 @@ func (a AuthenticatorDevices) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 
 // FilterDuplicateTypes Filters out duplicate types e.g. WebAuthn or UAF
 func (a AuthenticatorDevices) FilterDuplicateTypes() AuthenticatorDevices {
-	types := map[string]bool{}
+	types := map[string]map[string]bool{}
 	n := 0
+	var aa AuthenticatorDevices
 	for _, v := range a {
-		if !types[v.AuthenticatorType] {
-			a[n] = v
-			types[v.AuthenticatorType] = true
+		if !types[v.AuthenticatorType][v.AuthenticatorAttachment] {
+			aa = append(aa, v)
+			types[v.AuthenticatorType][v.AuthenticatorAttachment] = true
 			n++
 		}
 	}
-	a = a[:n]
-	return a
+	return aa[:n]
 }
 
 // AuthenticatorRename struct for Authenticator renaming
