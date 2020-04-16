@@ -10,12 +10,13 @@ import (
 
 // AuthenticatorDevice holds information about an Authenticator Device
 type AuthenticatorDevice struct {
-	DeviceId          string    `json:"deviceId"`
-	KeyName           string    `json:"keyName"`
-	AuthenticatorType string    `json:"authenticatorType"`
-	AuthenticatorAttachment string `json:"authenticatorAttachment"`
-	LastUsage         time.Time `json:"lastUsage"`
-	CreatedAt         time.Time `json:"createdAt"`
+	DeviceId                string    `json:"deviceId"`
+	KeyName                 string    `json:"keyName"`
+	AuthenticatorType       string    `json:"authenticatorType"`
+	AuthenticatorAttachment string    `json:"authenticatorAttachment"`
+	LastUsage               time.Time `json:"lastUsage"`
+	CreatedAt               time.Time `json:"createdAt"`
+	IsSecondFactorOnly      *bool     `json:"isSecondFactorOnly"`
 }
 
 // AuthenticatorDevices Slice of AuthenticatorDevice

@@ -25,6 +25,7 @@ type Request struct {
 	ClientData                     *ClientData                     `json:"clientData"`
 	DeviceIds                      *[]string                       `json:"deviceIds"`
 	AuthenticatorSelectionCriteria *AuthenticatorSelectionCriteria `json:"authenticatorSelectionCriteria"`
+	IsSecondFactorOnly             *bool                           `json:"isSecondFactorOnly,omitempty"`
 }
 
 type RelyingParty struct {
