@@ -43,6 +43,20 @@ func (a AuthenticatorDevices) FilterDuplicateTypes() AuthenticatorDevices {
 	return aa[:n]
 }
 
+// FilterSecondFactor Filters only for 2FA or PWless devices
+func (a AuthenticatorDevices) FilterSecondFactor(isSecondFactor *bool) AuthenticatorDevices {
+	n := 0
+	var aa AuthenticatorDevices
+	for _, v := range a {
+		if v.IsSecondFactorOnly == isSecondFactor {
+			aa = append(aa, v)
+			n++
+		}
+	}
+
+	return aa[:n]
+}
+
 // AuthenticatorRename struct for Authenticator renaming
 type AuthenticatorRename struct {
 	NewName string `json:"newName"`
