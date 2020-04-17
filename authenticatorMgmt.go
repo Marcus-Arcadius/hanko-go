@@ -48,7 +48,8 @@ func (a AuthenticatorDevices) FilterSecondFactor(isSecondFactor *bool) Authentic
 	n := 0
 	var aa AuthenticatorDevices
 	for _, v := range a {
-		if *v.IsSecondFactorOnly == *isSecondFactor {
+		if (v.IsSecondFactorOnly == nil && isSecondFactor == nil) ||
+			(v.IsSecondFactorOnly != nil && isSecondFactor != nil && *v.IsSecondFactorOnly == *isSecondFactor) {
 			aa = append(aa, v)
 			n++
 		}
