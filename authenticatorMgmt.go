@@ -70,10 +70,6 @@ func (client *HankoApiClient) GetAuthenticators(userId string) (*AuthenticatorDe
 		return nil, errors.Wrap(err, "Could not do Request to get Authenticator Devices.")
 	}
 
-	if resp.StatusCode != http.StatusOK {
-		return nil, errors.Wrapf(err, "get authenticators failed: %d - %s", resp.StatusCode, resp.Status)
-	}
-
 	apiResp := &AuthenticatorDevices{}
 	dec := json.NewDecoder(resp.Body)
 	err = dec.Decode(apiResp)
