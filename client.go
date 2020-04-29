@@ -25,11 +25,11 @@ func NewHankoApiClient(baseUrl string, secret string) *HankoApiClient {
 }
 
 func (client *HankoApiClient) GetWebAuthnUrl() (url string) {
-	return "/"+client.apiVersion+"/webauthn/requests"
+	return "/" + client.apiVersion + "/webauthn/requests"
 }
 
 func (client *HankoApiClient) GetUafUrl() (url string) {
-	return "/"+client.apiVersion+"/uaf/requests"
+	return "/" + client.apiVersion + "/uaf/requests"
 }
 
 // WEBAUTHN ------------------------------------------------------------------------------------------------------------
@@ -144,10 +144,12 @@ func (client *HankoApiClient) Request(method string, path string, request interf
 }
 
 // doRequest does a generic Request to the Hanko API
-func (client *HankoApiClient) doRequest(method string, path string, request interface{}) (response *http.Response, error error) {
+func (client *HankoApiClient) doRequest(method string, path string, request interface{}) (*http.Response, error) {
+	var err error
+
 	buf := new(bytes.Buffer)
 	if request != nil {
-		err := json.NewEncoder(buf).Encode(request)
+		err = json.NewEncoder(buf).Encode(request)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to encode the request")
 		}
@@ -166,7 +168,9 @@ func (client *HankoApiClient) doRequest(method string, path string, request inte
 		return nil, errors.Wrap(err, "could not do request")
 	}
 
+	if resp.StatusCode != http.StatusOK {
+		return nil, errors.Errorf("request failed, got: %d - %s", resp.StatusCode, resp.Status)
+	}
+
 	return resp, nil
 }
-
-
