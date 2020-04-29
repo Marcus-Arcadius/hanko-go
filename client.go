@@ -129,6 +129,9 @@ func (client *HankoApiClient) GetRequestStatus(path string, requestId string) (*
 // Request does an AUTH/REG/DEREG based Request to the Hanko API
 func (client *HankoApiClient) Request(method string, path string, request interface{}) (*Response, error) {
 	resp, err := client.doRequest(method, path, request)
+	if err != nil {
+		return nil, err
+	}
 
 	apiResp := &Response{}
 	dec := json.NewDecoder(resp.Body)
@@ -158,9 +161,15 @@ func (client *HankoApiClient) doRequest(method string, path string, request inte
 	req.Header.Add("Authorization", "secret "+client.secret)
 	req.Header.Add("Content-Type", "application/json")
 	resp, err := client.httpClient.Do(req)
+
 	if err != nil {
 		return nil, errors.Wrap(err, "could not do request")
 	}
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, errors.Errorf("api request failed, got: %d - %s", resp.StatusCode, resp.Status)
+	}
+
 	return resp, nil
 }
 
