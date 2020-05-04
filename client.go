@@ -165,7 +165,7 @@ func (client *HankoApiClient) doRequest(method string, path string, request inte
 	resp, err := client.httpClient.Do(req)
 
 	if err != nil {
-		return nil, errors.Wrap(err, "could not do request")
+		return nil, errors.Wrapf(err, "could not do request: %s %s%s", method, client.baseUrl, path)
 	}
 
 	if resp.StatusCode != http.StatusOK {
