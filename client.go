@@ -169,7 +169,7 @@ func (client *HankoApiClient) doRequest(method string, path string, request inte
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, errors.Errorf("request failed, got: %s", resp.Status)
+		return nil, errors.Errorf("request (%s %s%s) failed, got: %s", method, client.baseUrl, path, resp.Status)
 	}
 
 	return resp, nil
