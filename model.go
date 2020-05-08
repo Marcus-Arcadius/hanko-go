@@ -47,6 +47,10 @@ type Link struct {
 	Rel    string `json:"rel"`
 }
 
+type Device struct {
+	KeyName *string `json:"keyName;omitempty"`
+}
+
 type Response struct {
 	Id           string       `json:"id"`
 	Operation    Operation    `json:"operation"`
@@ -59,6 +63,7 @@ type Response struct {
 	Request      string       `json:"request"`
 	DeviceId     string       `json:"deviceId"`
 	Links        []Link       `json:"links"`
+	Device       *Device      `json:"device;omitempty"`
 }
 
 type AuthenticatorResponse struct {
