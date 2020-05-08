@@ -48,7 +48,7 @@ type Link struct {
 }
 
 type Device struct {
-	KeyName *string `json:"keyName;omitempty"`
+	KeyName *string `json:"keyName,omitempty"`
 }
 
 type Response struct {
@@ -63,7 +63,7 @@ type Response struct {
 	Request      string       `json:"request"`
 	DeviceId     string       `json:"deviceId"`
 	Links        []Link       `json:"links"`
-	Device       *Device      `json:"device;omitempty"`
+	Device       *Device      `json:"device,omitempty"`
 }
 
 type AuthenticatorResponse struct {
