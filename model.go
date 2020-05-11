@@ -51,6 +51,7 @@ type Device struct {
 	KeyName *string `json:"keyName,omitempty"`
 }
 
+
 type Response struct {
 	Id           string       `json:"id"`
 	Operation    Operation    `json:"operation"`
