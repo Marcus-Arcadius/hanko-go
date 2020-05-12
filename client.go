@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"encoding/json"
 	"github.com/pkg/errors"
+	"io/ioutil"
+	"log"
 	"net/http"
 )
 
@@ -134,9 +136,15 @@ func (client *HankoApiClient) Request(method string, path string, request interf
 	}
 
 	apiResp := &Response{}
-	dec := json.NewDecoder(resp.Body)
-	err = dec.Decode(apiResp)
+	body, err := ioutil.ReadAll(resp.Body)
+	log.Printf("api raw response: %s", string(body))
+
+	err = json.Unmarshal(body, apiResp)
+	//dec := json.NewDecoder(resp.Body)
+	//err = dec.Decode(apiResp)
 	if err != nil {
+
+
 		return nil, errors.Wrap(err, "failed to decode the response")
 	}
 
