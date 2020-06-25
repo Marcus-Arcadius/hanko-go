@@ -23,6 +23,7 @@ type Request struct {
 	Username                       string                          `json:"username"`
 	UserId                         string                          `json:"userId"`
 	ClientData                     *ClientData                     `json:"clientData"`
+	Transaction                    *string                         `json:"transaction,omitempty"`
 	DeviceIds                      *[]string                       `json:"deviceIds"`
 	AuthenticatorSelectionCriteria *AuthenticatorSelectionCriteria `json:"authenticatorSelectionCriteria"`
 	IsSecondFactorOnly             *bool                           `json:"isSecondFactorOnly,omitempty"`
@@ -51,7 +52,6 @@ type Device struct {
 	KeyName *string `json:"keyName,omitempty"`
 }
 
-
 type Response struct {
 	Id           string       `json:"id"`
 	Operation    Operation    `json:"operation"`
@@ -64,6 +64,7 @@ type Response struct {
 	Request      string       `json:"request"`
 	DeviceId     string       `json:"deviceId"`
 	Links        []Link       `json:"links"`
+	Transaction  *string      `json:"transaction,omitempty"`
 	Device       *Device      `json:"device,omitempty"`
 }
 
