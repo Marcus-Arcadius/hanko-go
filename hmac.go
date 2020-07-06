@@ -56,7 +56,7 @@ func CalculateHmac(messageData *HmacMessageData) string {
 
 	jsonRepresentation, _ := json.Marshal(hmacJson)
 
-	return base64.StdEncoding.EncodeToString(jsonRepresentation)
+	return base64.RawStdEncoding.EncodeToString(jsonRepresentation)
 }
 
 func hashRequestBody(requestBody string) string {
