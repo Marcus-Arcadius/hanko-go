@@ -13,6 +13,7 @@ import (
 type HankoApiClient struct {
 	baseUrl    string
 	secret     string
+	apiKeyId   string
 	httpClient http.Client
 	apiVersion string
 }
@@ -22,6 +23,16 @@ func NewHankoApiClient(baseUrl string, secret string) *HankoApiClient {
 	return &HankoApiClient{
 		baseUrl:    baseUrl,
 		secret:     secret,
+		apiVersion: "v1",
+	}
+}
+
+// Returns new client with capabilities for calculating an HMAC
+func NewHankoHmacClient(baseUrl string, secret string, apiKeyId string) *HankoApiClient {
+	return &HankoApiClient{
+		baseUrl:    baseUrl,
+		secret:     secret,
+		apiKeyId:   apiKeyId,
 		apiVersion: "v1",
 	}
 }
@@ -168,7 +179,20 @@ func (client *HankoApiClient) doRequest(method string, path string, request inte
 		return nil, errors.Wrapf(err, "failed to create request %s %s", method, client.baseUrl+path)
 	}
 
-	req.Header.Add("Authorization", "secret "+client.secret)
+	if client.apiKeyId != "" {
+		hmac := CalculateHmac(&HmacMessageData{
+			apiSecret:     client.secret,
+			apiKeyId:      client.apiKeyId,
+			requestMethod: method,
+			requestPath:   path,
+			requestBody:   buf.String(),
+		})
+
+		req.Header.Add("Authorization", "HANKO "+hmac)
+	} else {
+		req.Header.Add("Authorization", "secret "+client.secret)
+	}
+
 	req.Header.Add("Content-Type", "application/json")
 	resp, err := client.httpClient.Do(req)
 
