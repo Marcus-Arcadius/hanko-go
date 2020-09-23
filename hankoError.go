@@ -3,7 +3,7 @@ package hankoApiClient
 import "fmt"
 
 type HankoError struct {
-	Code    int64  `json:"code"`
+	Code    int  `json:"code"`
 	Message string `json:"message"`
 }
 
