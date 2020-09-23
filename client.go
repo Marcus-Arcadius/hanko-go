@@ -154,8 +154,6 @@ func (client *HankoApiClient) Request(method string, path string, request interf
 	//dec := json.NewDecoder(resp.Body)
 	//err = dec.Decode(apiResp)
 	if err != nil {
-
-
 		return nil, errors.Wrap(err, "failed to decode the response")
 	}
 
@@ -201,7 +199,17 @@ func (client *HankoApiClient) doRequest(method string, path string, request inte
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, errors.Errorf("request (%s %s%s) failed, got: %s", method, client.baseUrl, path, resp.Status)
+		errorResponse := &HankoError{}
+		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return nil, errors.Wrap(err, "could not read error response body")
+		}
+		err = json.Unmarshal(body, errorResponse)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to decode error response")
+		}
+
+		return nil, errorResponse
 	}
 
 	return resp, nil
