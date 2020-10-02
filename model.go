@@ -3,6 +3,11 @@ package hankoApiClient
 type Operation string
 type AttestationConveyancePreference string
 
+func (p AttestationConveyancePreference) String() *string {
+	str := string(p)
+	return &str
+}
+
 const (
 	AUTH  Operation = "AUTH"
 	REG   Operation = "REG"
@@ -26,15 +31,15 @@ type AuthenticatorSelectionCriteria struct {
 }
 
 type Request struct {
-	Operation                       Operation                        `json:"operation"`
-	Username                        string                           `json:"username"`
-	UserId                          string                           `json:"userId"`
-	ClientData                      *ClientData                      `json:"clientData"`
-	Transaction                     *string                          `json:"transaction,omitempty"`
-	DeviceIds                       *[]string                        `json:"deviceIds"`
-	AuthenticatorSelectionCriteria  *AuthenticatorSelectionCriteria  `json:"authenticatorSelectionCriteria"`
-	IsSecondFactorOnly              *bool                            `json:"isSecondFactorOnly,omitempty"`
-	AttestationConveyancePreference *AttestationConveyancePreference `json:"attestationConveyancePreference,omitempty"`
+	Operation                       Operation                       `json:"operation"`
+	Username                        string                          `json:"username"`
+	UserId                          string                          `json:"userId"`
+	ClientData                      *ClientData                     `json:"clientData"`
+	Transaction                     *string                         `json:"transaction,omitempty"`
+	DeviceIds                       *[]string                       `json:"deviceIds"`
+	AuthenticatorSelectionCriteria  *AuthenticatorSelectionCriteria `json:"authenticatorSelectionCriteria"`
+	IsSecondFactorOnly              *bool                           `json:"isSecondFactorOnly,omitempty"`
+	AttestationConveyancePreference *string                         `json:"attestationConveyancePreference,omitempty"`
 }
 
 type RelyingParty struct {
