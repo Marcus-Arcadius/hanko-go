@@ -83,7 +83,7 @@ func (client *HankoApiClient) InitWebAuthnDeRegistration(userId string, userName
 
 // FinalizeWebAuthnOperation Is the last step to either Register or Authenticate an WebAuthn Request. Pass the result of
 // the WebAuthn API call of the Browser to this method.
-func (client *HankoApiClient) FinalizeWebAuthnOperation(requestId string, request *HankoCredentialRequest) (*Response, error) {
+func (client *HankoApiClient) FinalizeWebAuthnOperation(requestId string, request *HankoWebAuthnCredentialRequest) (*Response, error) {
 	return client.FinalizeOperation(client.GetWebAuthnUrl(), requestId, request)
 }
 
@@ -121,6 +121,10 @@ func (client *HankoApiClient) InitUafDeRegistration(userId string, userName stri
 	return client.InitOperation(client.GetUafUrl(), req)
 }
 
+func (client *HankoApiClient) FinalizeUafOperation(requestId string, request *HankoUafCredentialRequest) (*Response, error) {
+	return client.FinalizeOperation(client.GetUafUrl(), requestId, request)
+}
+
 func (client *HankoApiClient) GetUafRequestStatus(requestId string) (*Response, error) {
 	return client.GetRequestStatus(client.GetUafUrl(), requestId)
 }
@@ -131,7 +135,7 @@ func (client *HankoApiClient) InitOperation(path string, request *Request) (*Res
 	return client.Request(http.MethodPost, path, request)
 }
 
-func (client *HankoApiClient) FinalizeOperation(path string, requestId string, request *HankoCredentialRequest) (*Response, error) {
+func (client *HankoApiClient) FinalizeOperation(path string, requestId string, request interface{}) (*Response, error) {
 	return client.Request(http.MethodPut, path+"/"+requestId, request)
 }
 
