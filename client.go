@@ -92,6 +92,10 @@ func (client *HankoApiClient) GetWebauthnRequestStatus(requestId string) (*Respo
 	return client.GetRequestStatus(client.GetWebAuthnUrl(), requestId)
 }
 
+func (client *HankoApiClient) CancelWebAuthnRequest(requestId string) (*Response, error) {
+	return client.CancelOperation(client.GetWebAuthnUrl(), requestId)
+}
+
 // UAF -----------------------------------------------------------------------------------------------------------------
 
 func (client *HankoApiClient) InitUafRegistration(userId string, userName string) (*Response, error) {
@@ -129,6 +133,10 @@ func (client *HankoApiClient) GetUafRequestStatus(requestId string) (*Response, 
 	return client.GetRequestStatus(client.GetUafUrl(), requestId)
 }
 
+func (client *HankoApiClient) CancelUafRequest(requestId string) (*Response, error) {
+	return client.CancelOperation(client.GetUafUrl(), requestId)
+}
+
 // GENERIC -------------------------------------------------------------------------------------------------------------
 
 func (client *HankoApiClient) InitOperation(path string, request *Request) (*Response, error) {
@@ -141,6 +149,10 @@ func (client *HankoApiClient) FinalizeOperation(path string, requestId string, r
 
 func (client *HankoApiClient) GetRequestStatus(path string, requestId string) (*Response, error) {
 	return client.Request(http.MethodGet, path+"/"+requestId, nil)
+}
+
+func(client *HankoApiClient) CancelOperation(path string, requestId string) (*Response, error) {
+	return client.Request(http.MethodDelete, path+"/"+requestId, nil)
 }
 
 // Request does an AUTH/REG/DEREG based Request to the Hanko API
