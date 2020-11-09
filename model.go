@@ -28,6 +28,7 @@ type ClientData struct {
 type AuthenticatorSelectionCriteria struct {
 	UserVerification        string `json:"userVerification"`
 	AuthenticatorAttachment string `json:"authenticatorAttachment"`
+	RequireResidentKey      bool   `json:"requireResidentKey"`
 }
 
 type Request struct {
