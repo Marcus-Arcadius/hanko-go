@@ -28,6 +28,7 @@ type ClientData struct {
 type AuthenticatorSelectionCriteria struct {
 	UserVerification        string `json:"userVerification"`
 	AuthenticatorAttachment string `json:"authenticatorAttachment"`
+	RequireResidentKey      bool   `json:"requireResidentKey"`
 }
 
 type Request struct {
@@ -97,10 +98,19 @@ type PublicKeyCredential struct {
 }
 
 type DeviceKeyInfo struct {
-	KeyName string `json:"keyName"`
+	KeyName      string `json:"keyName"`
+	DeviceOs     string `json:"deviceOs"`
+	OsVersion    string `json:"osVersion"`
+	Manufacturer string `json:"manufacturer"`
+	Model        string `json:"model"`
 }
 
-type HankoCredentialRequest struct {
+type HankoWebAuthnCredentialRequest struct {
 	WebAuthnResponse PublicKeyCredential `json:"webAuthnResponse"`
 	DeviceKeyInfo    DeviceKeyInfo       `json:"deviceKeyInfo"`
+}
+
+type HankoUafCredentialRequest struct {
+	UafResponse   string        `json:"uafResponse"`
+	DeviceKeyInfo DeviceKeyInfo `json:"deviceKeyInfo"`
 }
