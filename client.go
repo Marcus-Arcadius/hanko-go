@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/url"
 )
 
 // HankoApiClient Provides Methods for interacting with the Hanko API
@@ -14,27 +15,46 @@ type HankoApiClient struct {
 	baseUrl    string
 	secret     string
 	apiKeyId   string
-	httpClient http.Client
+	httpClient *http.Client
 	apiVersion string
 }
 
 // Returns a HankoApiClient give it the base url e.g. https://api.hanko.io and your API Secret
-func NewHankoApiClient(baseUrl string, secret string) *HankoApiClient {
+func NewHankoApiClient(baseUrl string, secret string, proxyUrl *string) (*HankoApiClient, error) {
+	var httpClient = &http.Client{}
+	if proxyUrl != nil {
+		proxyurl, err := url.Parse(*proxyUrl)
+		if err != nil {
+			return nil, err
+		}
+		httpClient = &http.Client{Transport: &http.Transport{Proxy: http.ProxyURL(proxyurl)}}
+	}
+
 	return &HankoApiClient{
 		baseUrl:    baseUrl,
 		secret:     secret,
 		apiVersion: "v1",
-	}
+		httpClient: httpClient,
+	}, nil
 }
 
 // Returns new client with capabilities for calculating an HMAC
-func NewHankoHmacClient(baseUrl string, secret string, apiKeyId string) *HankoApiClient {
+func NewHankoHmacClient(baseUrl string, secret string, apiKeyId string, proxyUrl *string) (*HankoApiClient, error) {
+	var httpClient = &http.Client{}
+	if proxyUrl != nil {
+		proxyurl, err := url.Parse(*proxyUrl)
+		if err != nil {
+			return nil, err
+		}
+		httpClient = &http.Client{Transport: &http.Transport{Proxy: http.ProxyURL(proxyurl)}}
+	}
 	return &HankoApiClient{
 		baseUrl:    baseUrl,
 		secret:     secret,
 		apiKeyId:   apiKeyId,
 		apiVersion: "v1",
-	}
+		httpClient: httpClient,
+	}, nil
 }
 
 func (client *HankoApiClient) GetWebAuthnUrl() (url string) {
@@ -151,7 +171,7 @@ func (client *HankoApiClient) GetRequestStatus(path string, requestId string) (*
 	return client.Request(http.MethodGet, path+"/"+requestId, nil)
 }
 
-func(client *HankoApiClient) CancelOperation(path string, requestId string) (*Response, error) {
+func (client *HankoApiClient) CancelOperation(path string, requestId string) (*Response, error) {
 	return client.Request(http.MethodDelete, path+"/"+requestId, nil)
 }
 
