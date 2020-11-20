@@ -7,7 +7,6 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"net/url"
 )
 
 // HankoApiClient Provides Methods for interacting with the Hanko API
@@ -19,42 +18,23 @@ type HankoApiClient struct {
 	apiVersion string
 }
 
-// Returns a HankoApiClient give it the base url e.g. https://api.hanko.io and your API Secret
-func NewHankoApiClient(baseUrl string, secret string, proxyUrl *string) (*HankoApiClient, error) {
-	var httpClient = &http.Client{}
-	if proxyUrl != nil {
-		proxyurl, err := url.Parse(*proxyUrl)
-		if err != nil {
-			return nil, err
-		}
-		httpClient = &http.Client{Transport: &http.Transport{Proxy: http.ProxyURL(proxyurl)}}
-	}
+const hankoApiURL = "https://api.hanko.io"
 
-	return &HankoApiClient{
-		baseUrl:    baseUrl,
-		secret:     secret,
-		apiVersion: "v1",
-		httpClient: httpClient,
-	}, nil
+// NewDefaultHankoApiClient returns a HankoApiClient with a default http.Client
+func NewDefaultHankoApiClient(apiKeySecret string, apiKeyId string) *HankoApiClient {
+	return NewHankoApiClient(hankoApiURL, apiKeySecret, apiKeyId, &http.Client{})
 }
 
-// Returns new client with capabilities for calculating an HMAC
-func NewHankoHmacClient(baseUrl string, secret string, apiKeyId string, proxyUrl *string) (*HankoApiClient, error) {
-	var httpClient = &http.Client{}
-	if proxyUrl != nil {
-		proxyurl, err := url.Parse(*proxyUrl)
-		if err != nil {
-			return nil, err
-		}
-		httpClient = &http.Client{Transport: &http.Transport{Proxy: http.ProxyURL(proxyurl)}}
-	}
+//NewHankoApiClient returns a HankoApiClient.
+// Use this if you want to define a proxy or custom timeout settings.
+func NewHankoApiClient(baseUrl, apiKeySecret, apiKeyId string, httpClient *http.Client) *HankoApiClient {
 	return &HankoApiClient{
 		baseUrl:    baseUrl,
-		secret:     secret,
+		secret:     apiKeySecret,
 		apiKeyId:   apiKeyId,
 		apiVersion: "v1",
 		httpClient: httpClient,
-	}, nil
+	}
 }
 
 func (client *HankoApiClient) GetWebAuthnUrl() (url string) {
