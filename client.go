@@ -14,26 +14,26 @@ type HankoApiClient struct {
 	baseUrl    string
 	secret     string
 	apiKeyId   string
-	httpClient http.Client
+	httpClient *http.Client
 	apiVersion string
 }
 
-// Returns a HankoApiClient give it the base url e.g. https://api.hanko.io and your API Secret
-func NewHankoApiClient(baseUrl string, secret string) *HankoApiClient {
-	return &HankoApiClient{
-		baseUrl:    baseUrl,
-		secret:     secret,
-		apiVersion: "v1",
-	}
+const hankoApiURL = "https://api.hanko.io"
+
+// NewDefaultHankoApiClient returns a HankoApiClient with a default http.Client
+func NewDefaultHankoApiClient(apiKeySecret string, apiKeyId string) *HankoApiClient {
+	return NewHankoApiClient(hankoApiURL, apiKeySecret, apiKeyId, &http.Client{})
 }
 
-// Returns new client with capabilities for calculating an HMAC
-func NewHankoHmacClient(baseUrl string, secret string, apiKeyId string) *HankoApiClient {
+//NewHankoApiClient returns a HankoApiClient.
+// Use this if you want to define a proxy or custom timeout settings.
+func NewHankoApiClient(baseUrl, apiKeySecret, apiKeyId string, httpClient *http.Client) *HankoApiClient {
 	return &HankoApiClient{
 		baseUrl:    baseUrl,
-		secret:     secret,
+		secret:     apiKeySecret,
 		apiKeyId:   apiKeyId,
 		apiVersion: "v1",
+		httpClient: httpClient,
 	}
 }
 
@@ -151,7 +151,7 @@ func (client *HankoApiClient) GetRequestStatus(path string, requestId string) (*
 	return client.Request(http.MethodGet, path+"/"+requestId, nil)
 }
 
-func(client *HankoApiClient) CancelOperation(path string, requestId string) (*Response, error) {
+func (client *HankoApiClient) CancelOperation(path string, requestId string) (*Response, error) {
 	return client.Request(http.MethodDelete, path+"/"+requestId, nil)
 }
 
