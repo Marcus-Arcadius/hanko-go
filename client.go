@@ -3,6 +3,7 @@ package hankoApiClient
 import (
 	"bytes"
 	"encoding/json"
+	"github.com/google/go-querystring/query"
 	"github.com/pkg/errors"
 	"io/ioutil"
 	"log"
@@ -38,145 +39,126 @@ func NewHankoHmacClient(baseUrl string, secret string, apiKeyId string) *HankoAp
 }
 
 func (client *HankoApiClient) GetWebAuthnUrl() (url string) {
-	return "/" + client.apiVersion + "/webauthn/requests"
+	return "/" + client.apiVersion + "/webauthn"
 }
 
-func (client *HankoApiClient) GetUafUrl() (url string) {
-	return "/" + client.apiVersion + "/uaf/requests"
+func (client *HankoApiClient) GetWebAuthnRegistrationUrl() (url string) {
+	return client.GetWebAuthnUrl() + "/registration"
+}
+
+func (client *HankoApiClient) GetWebAuthnAuthenticationUrl() (url string) {
+	return client.GetWebAuthnUrl() + "/authentication"
+}
+
+func (client *HankoApiClient) GetWebAuthnTransactionUrl() (url string) {
+	return client.GetWebAuthnUrl() + "/transaction"
+}
+
+func (client *HankoApiClient) GetWebAuthnCredentialsUrl() (url string) {
+	return client.GetWebAuthnUrl() + "/credentials"
 }
 
 // WEBAUTHN ------------------------------------------------------------------------------------------------------------
 
-// InitWebauthnRegistration initiates the Registration of an Authenticator. Pass the result from the Hanko API to the
+// InitWebAuthnRegistration initiates the Registration of an Authenticator. Pass the result from the Hanko API to the
 // WebAuthn API of the Browser to get it signed. The result has to be send back with FinalizeWebauthnOperation to finalize
 // the Registration Flow.
-func (client *HankoApiClient) InitWebauthnRegistration(userId string, userName string) (*Response, error) {
-	req := &Request{
-		Operation: REG,
-		Username:  userName,
-		UserId:    userId,
-	}
-	return client.InitOperation(client.GetWebAuthnUrl(), req)
+func (client *HankoApiClient) InitWebAuthnRegistration(request *WebAuthnRegistrationInitializationRequest) (response *WebAuthnRegistrationInitializationResponse, err error) {
+	response = &WebAuthnRegistrationInitializationResponse{}
+	path := client.GetWebAuthnRegistrationUrl() + "/initialize"
+	err = client.Request(http.MethodPost, path, request, response)
+	return response, err
+}
+
+// FinalizeWebAuthnRegistration Is the last step to either Register or Authenticate an WebAuthn Request. Pass the result of
+// the WebAuthn API call of the Browser to this method.
+func (client *HankoApiClient) FinalizeWebAuthnRegistration(request *WebAuthnRegistrationFinalizationRequest) (response *WebAuthnRegistrationFinalizationResponse, err error) {
+	response = &WebAuthnRegistrationFinalizationResponse{}
+	path := client.GetWebAuthnRegistrationUrl() + "/finalize"
+	err = client.Request(http.MethodPost, path, request, response)
+	return response, err
 }
 
 // InitWebAuthnAuthentication initiates the Authentication Flow. Pass the challenge from the Hanko API to the
 // WebAuthn API of the Browser to get it signed. The result has to be send back with FinalizeWebauthnOperation to finalize
 // the Registration Flow.
-func (client *HankoApiClient) InitWebAuthnAuthentication(userId string, userName string) (*Response, error) {
-	req := &Request{
-		Operation: AUTH,
-		Username:  userName,
-		UserId:    userId,
-	}
-	return client.InitOperation(client.GetWebAuthnUrl(), req)
+func (client *HankoApiClient) InitWebAuthnAuthentication(request *WebAuthnAuthenticationInitializationRequest) (response *WebAuthnAuthenticationInitializationResponse, err error) {
+	response = &WebAuthnAuthenticationInitializationResponse{}
+	path := client.GetWebAuthnAuthenticationUrl() + "/initialize"
+	err = client.Request(http.MethodPost, path, request, response)
+	return response, err
 }
 
-// InitWebAuthnDeRegistration de-registers an Authenticator Device. This Operation doesn't need to be finalized.
-func (client *HankoApiClient) InitWebAuthnDeRegistration(userId string, userName string) (*Response, error) {
-	req := &Request{
-		Operation: DEREG,
-		Username:  userName,
-		UserId:    userId,
-	}
-	return client.InitOperation(client.GetWebAuthnUrl(), req)
-}
-
-// FinalizeWebAuthnOperation Is the last step to either Register or Authenticate an WebAuthn Request. Pass the result of
+// FinalizeWebAuthnRegistration Is the last step to either Register or Authenticate an WebAuthn Request. Pass the result of
 // the WebAuthn API call of the Browser to this method.
-func (client *HankoApiClient) FinalizeWebAuthnOperation(requestId string, request *HankoCredentialRequest) (*Response, error) {
-	return client.FinalizeOperation(client.GetWebAuthnUrl(), requestId, request)
+func (client *HankoApiClient) FinalizeWebAuthnAuthentication(request *WebAuthnAuthenticationFinalizationRequest) (response *WebAuthnAuthenticationFinalizationResponse, err error) {
+	response = &WebAuthnAuthenticationFinalizationResponse{}
+	path := client.GetWebAuthnAuthenticationUrl() + "/finalize"
+	err = client.Request(http.MethodPost, path, request, response)
+	return response, err
 }
 
-// GetWebauthnRequestStatus Returns a status Response of a running request
-func (client *HankoApiClient) GetWebauthnRequestStatus(requestId string) (*Response, error) {
-	return client.GetRequestStatus(client.GetWebAuthnUrl(), requestId)
+// InitWebAuthnTransaction initiates the Authentication Flow. Pass the challenge from the Hanko API to the
+// WebAuthn API of the Browser to get it signed. The result has to be send back with FinalizeWebauthnOperation to finalize
+// the Registration Flow.
+func (client *HankoApiClient) InitWebAuthnTransaction(request *WebAuthnTransactionInitializationRequest) (response *WebAuthnTransactionInitializationResponse, err error) {
+	response = &WebAuthnTransactionInitializationResponse{}
+	path := client.GetWebAuthnTransactionUrl() + "/initialize"
+	err = client.Request(http.MethodPost, path, request, response)
+	return response, err
 }
 
-// UAF -----------------------------------------------------------------------------------------------------------------
-
-func (client *HankoApiClient) InitUafRegistration(userId string, userName string) (*Response, error) {
-	req := &Request{
-		Operation: REG,
-		Username:  userName,
-		UserId:    userId,
-	}
-	return client.InitOperation(client.GetUafUrl(), req)
+// FinalizeWebAuthnRegistration Is the last step to either Register or Authenticate an WebAuthn Request. Pass the result of
+// the WebAuthn API call of the Browser to this method.
+func (client *HankoApiClient) FinalizeWebAuthnTransaction(request *WebAuthnTransactionFinalizationRequest) (response *WebAuthnTransactionFinalizationResponse, err error) {
+	response = &WebAuthnTransactionFinalizationResponse{}
+	path := client.GetWebAuthnTransactionUrl() + "/finalize"
+	err = client.Request(http.MethodPost, path, request, response)
+	return response, err
 }
 
-func (client *HankoApiClient) InitUafAuthentication(userId string, userName string) (*Response, error) {
-	req := &Request{
-		Operation: AUTH,
-		Username:  userName,
-		UserId:    userId,
-	}
-	return client.InitOperation(client.GetUafUrl(), req)
-}
-
-func (client *HankoApiClient) InitUafDeRegistration(userId string, userName string) (*Response, error) {
-	req := &Request{
-		Operation: DEREG,
-		Username:  userName,
-		UserId:    userId,
-	}
-	return client.InitOperation(client.GetUafUrl(), req)
-}
-
-func (client *HankoApiClient) GetUafRequestStatus(requestId string) (*Response, error) {
-	return client.GetRequestStatus(client.GetUafUrl(), requestId)
-}
-
-// GENERIC -------------------------------------------------------------------------------------------------------------
-
-func (client *HankoApiClient) InitOperation(path string, request *Request) (*Response, error) {
-	return client.Request(http.MethodPost, path, request)
-}
-
-func (client *HankoApiClient) FinalizeOperation(path string, requestId string, request *HankoCredentialRequest) (*Response, error) {
-	return client.Request(http.MethodPut, path+"/"+requestId, request)
-}
-
-func (client *HankoApiClient) GetRequestStatus(path string, requestId string) (*Response, error) {
-	return client.Request(http.MethodGet, path+"/"+requestId, nil)
-}
-
-// Request does an AUTH/REG/DEREG based Request to the Hanko API
-func (client *HankoApiClient) Request(method string, path string, request interface{}) (*Response, error) {
-	resp, err := client.doRequest(method, path, request)
+func (client *HankoApiClient) ListWebAuthnCredentials(q *WebAuthnCredentialQuery) (response *[]WebAuthnCredential, err error) {
+	response = &[]WebAuthnCredential{}
+	values, err := query.Values(q)
 	if err != nil {
 		return nil, err
 	}
-
-	apiResp := &Response{}
-	body, err := ioutil.ReadAll(resp.Body)
-	log.Printf("api raw response: %s", string(body))
-
-	err = json.Unmarshal(body, apiResp)
-	//dec := json.NewDecoder(resp.Body)
-	//err = dec.Decode(apiResp)
-	if err != nil {
-
-
-		return nil, errors.Wrap(err, "failed to decode the response")
-	}
-
-	return apiResp, nil
+	path := client.GetWebAuthnTransactionUrl() + "?" + values.Encode()
+	err = client.Request(http.MethodGet, path, nil, response)
+	return response, err
 }
 
-// doRequest does a generic Request to the Hanko API
-func (client *HankoApiClient) doRequest(method string, path string, request interface{}) (*http.Response, error) {
-	var err error
+func (client *HankoApiClient) GetWebAuthnCredential(id string) (response *WebAuthnCredential, err error) {
+	response = &WebAuthnCredential{}
+	path := client.GetWebAuthnTransactionUrl() + "/" + id
+	err = client.Request(http.MethodGet, path, nil, response)
+	return response, err
+}
 
+func (client *HankoApiClient) DeleteWebAuthnCredential(id string) (err error) {
+	path := client.GetWebAuthnTransactionUrl() + "/" + id
+	return client.Request(http.MethodDelete, path, nil, nil)
+}
+
+func (client *HankoApiClient) UpdateWebAuthnCredential(id string, request *WebAuthnCredentialUpdateRequest) (response *WebAuthnCredential, err error) {
+	response = &WebAuthnCredential{}
+	path := client.GetWebAuthnTransactionUrl() + "/" + id
+	err = client.Request(http.MethodPut, path, request, response)
+	return response, err
+}
+
+func (client *HankoApiClient) Request(method string, path string, request interface{}, response interface{}) (err error) {
 	buf := new(bytes.Buffer)
 	if request != nil {
 		err = json.NewEncoder(buf).Encode(request)
 		if err != nil {
-			return nil, errors.Wrap(err, "failed to encode the request")
+			return errors.Wrap(err, "failed to encode the Request")
 		}
 	}
 
 	req, err := http.NewRequest(method, client.baseUrl+path, buf)
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to create request %s %s", method, client.baseUrl+path)
+		return errors.Wrapf(err, "failed to create Request %s %s", method, client.baseUrl+path)
 	}
 
 	if client.apiKeyId != "" {
@@ -197,12 +179,21 @@ func (client *HankoApiClient) doRequest(method string, path string, request inte
 	resp, err := client.httpClient.Do(req)
 
 	if err != nil {
-		return nil, errors.Wrapf(err, "could not do request: %s %s%s", method, client.baseUrl, path)
+		return errors.Wrapf(err, "could not do Request: %s %s%s", method, client.baseUrl, path)
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, errors.Errorf("request (%s %s%s) failed, got: %s", method, client.baseUrl, path, resp.Status)
+		return errors.Errorf("Request (%s %s%s) failed, got: %s", method, client.baseUrl, path, resp.Status)
 	}
 
-	return resp, nil
+	if response != nil {
+		body, err := ioutil.ReadAll(resp.Body)
+		log.Printf("api raw response: %s", string(body))
+		err = json.Unmarshal(body, response)
+		if err != nil {
+			return errors.Wrap(err, "failed to decode the response")
+		}
+	}
+
+	return nil
 }
