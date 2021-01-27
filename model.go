@@ -129,9 +129,9 @@ type WebAuthnTransactionFinalizationResponse struct {
 }
 
 type WebAuthnCredentialQuery struct {
-	UserId   interface{} `url:"user_id"`
-	PageSize interface{} `url:"page_size"`
-	Page     interface{} `url:"page"`
+	UserId   string `url:"user_id"`
+	PageSize uint   `url:"page_size"`
+	Page     uint   `url:"page"`
 }
 
 type WebAuthnCredential struct {
