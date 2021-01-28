@@ -93,34 +93,35 @@ func (c *HankoApiClient) NewHttpRequest(method string, requestUrl string, reques
 		return nil, errors.Errorf("Failed to parse URL: '%s'", requestUrl)
 	}
 
-	buf := new(bytes.Buffer)
+	encodedRequestBody := new(bytes.Buffer)
 
 	if requestBody != nil {
-		err = json.NewEncoder(buf).Encode(requestBody)
+		err = json.NewEncoder(encodedRequestBody).Encode(requestBody)
 		if err != nil {
 			return nil, errors.Wrap(err, "Failed to encode the requestBody")
 		}
 	}
 
-	httpRequest, err = http.NewRequest(method, parsedRequestUrl.String(), buf)
+	httpRequest, err = http.NewRequest(method, parsedRequestUrl.String(), encodedRequestBody)
 	if err != nil {
 		return nil, errors.Wrap(err, "Failed to create a new HTTP request")
 	}
 
-	httpRequest.Header.Add("Authorization", c.getAuthorizationHeader(method, parsedRequestUrl, buf))
+	authorizationHeader := c.getAuthorizationHeader(method, parsedRequestUrl, encodedRequestBody)
+	httpRequest.Header.Add("Authorization", authorizationHeader)
 	httpRequest.Header.Add("Content-Type", "application/json")
 
 	return httpRequest, nil
 }
 
-func (c *HankoApiClient) getAuthorizationHeader(method string, url *url.URL, buf *bytes.Buffer) (authHeader string) {
+func (c *HankoApiClient) getAuthorizationHeader(method string, url *url.URL, body *bytes.Buffer) (authHeader string) {
 	if c.hmacApiKeyId != "" {
 		hmac := &HmacMessageData{
 			apiSecret:     c.secret,
 			apiKeyId:      c.hmacApiKeyId,
 			requestMethod: method,
 			requestPath:   url.Path,
-			requestBody:   buf.String(),
+			requestBody:   body.String(),
 		}
 		authHeader = fmt.Sprintf("hanko %s", CalculateHmac(hmac))
 	} else {
