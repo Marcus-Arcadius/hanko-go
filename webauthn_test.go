@@ -1,13 +1,14 @@
 package hankoApiClient
 
 import (
+	"net/http"
 	"testing"
 )
 
 func TestHankoApiClient_RegistrationInitialization(t *testing.T) {
 	requestBody := &WebAuthnRegistrationInitializationRequest{}
 	responseType := &WebAuthnRegistrationInitializationResponse{}
-	ts := runTestApi(requestBody, responseType)
+	ts := runTestApi(requestBody, responseType, http.StatusOK)
 	ts.Start()
 	defer ts.Close()
 	client := NewHankoApiClient(testBaseUrl, testApiSecret, WithoutLogs())
@@ -21,7 +22,7 @@ func TestHankoApiClient_RegistrationInitialization(t *testing.T) {
 func TestHankoApiClient_RegistrationFinalization(t *testing.T) {
 	requestBody := &WebAuthnRegistrationFinalizationRequest{}
 	responseType := &WebAuthnRegistrationFinalizationResponse{}
-	ts := runTestApi(requestBody, responseType)
+	ts := runTestApi(requestBody, responseType, http.StatusOK)
 	ts.Start()
 	defer ts.Close()
 	client := NewHankoApiClient(testBaseUrl, testApiSecret, WithoutLogs())
@@ -35,7 +36,7 @@ func TestHankoApiClient_RegistrationFinalization(t *testing.T) {
 func TestHankoApiClient_AuthenticationInitialization(t *testing.T) {
 	requestBody := &WebAuthnAuthenticationInitializationRequest{}
 	responseType := &WebAuthnAuthenticationInitializationResponse{}
-	ts := runTestApi(requestBody, responseType)
+	ts := runTestApi(requestBody, responseType, http.StatusOK)
 	ts.Start()
 	defer ts.Close()
 	client := NewHankoApiClient(testBaseUrl, testApiSecret, WithoutLogs())
@@ -49,7 +50,7 @@ func TestHankoApiClient_AuthenticationInitialization(t *testing.T) {
 func TestHankoApiClient_AuthenticationFinalization(t *testing.T) {
 	requestBody := &WebAuthnAuthenticationFinalizationRequest{}
 	responseType := &WebAuthnAuthenticationFinalizationResponse{}
-	ts := runTestApi(requestBody, responseType)
+	ts := runTestApi(requestBody, responseType, http.StatusOK)
 	ts.Start()
 	defer ts.Close()
 	client := NewHankoApiClient(testBaseUrl, testApiSecret, WithoutLogs())
@@ -63,7 +64,7 @@ func TestHankoApiClient_AuthenticationFinalization(t *testing.T) {
 func TestHankoApiClient_TransactionInitialization(t *testing.T) {
 	requestBody := &WebAuthnTransactionInitializationRequest{}
 	responseType := &WebAuthnTransactionInitializationResponse{}
-	ts := runTestApi(requestBody, responseType)
+	ts := runTestApi(requestBody, responseType, http.StatusOK)
 	ts.Start()
 	defer ts.Close()
 	client := NewHankoApiClient(testBaseUrl, testApiSecret, WithoutLogs())
@@ -77,7 +78,7 @@ func TestHankoApiClient_TransactionInitialization(t *testing.T) {
 func TestHankoApiClient_TransactionFinalization(t *testing.T) {
 	requestBody := &WebAuthnTransactionFinalizationRequest{}
 	responseType := &WebAuthnTransactionFinalizationResponse{}
-	ts := runTestApi(requestBody, responseType)
+	ts := runTestApi(requestBody, responseType, http.StatusOK)
 	ts.Start()
 	defer ts.Close()
 	client := NewHankoApiClient(testBaseUrl, testApiSecret, WithoutLogs())
@@ -90,7 +91,7 @@ func TestHankoApiClient_TransactionFinalization(t *testing.T) {
 
 func TestHankoApiClient_ListWebAuthnCredentials(t *testing.T) {
 	responseType := &[]WebAuthnCredential{}
-	ts := runTestApi(nil, responseType)
+	ts := runTestApi(nil, responseType, http.StatusOK)
 	ts.Start()
 	defer ts.Close()
 	client := NewHankoApiClient(testBaseUrl, testApiSecret, WithoutLogs())
@@ -103,7 +104,7 @@ func TestHankoApiClient_ListWebAuthnCredentials(t *testing.T) {
 
 func TestHankoApiClient_GetWebAuthnCredential(t *testing.T) {
 	responseType := &WebAuthnCredential{}
-	ts := runTestApi(nil, responseType)
+	ts := runTestApi(nil, responseType, http.StatusOK)
 	ts.Start()
 	defer ts.Close()
 	client := NewHankoApiClient(testBaseUrl, testApiSecret, WithoutLogs())
@@ -115,7 +116,7 @@ func TestHankoApiClient_GetWebAuthnCredential(t *testing.T) {
 }
 
 func TestHankoApiClient_DeleteWebAuthnCredential(t *testing.T) {
-	ts := runTestApi(nil, nil)
+	ts := runTestApi(nil, nil, http.StatusOK)
 	ts.Start()
 	defer ts.Close()
 	client := NewHankoApiClient(testBaseUrl, testApiSecret, WithoutLogs())
@@ -129,7 +130,7 @@ func TestHankoApiClient_DeleteWebAuthnCredential(t *testing.T) {
 func TestHankoApiClient_UpdateWebAuthnCredential(t *testing.T) {
 	requestBody := &WebAuthnCredentialUpdateRequest{}
 	responseType := &WebAuthnCredential{}
-	ts := runTestApi(requestBody, responseType)
+	ts := runTestApi(requestBody, responseType, http.StatusOK)
 	ts.Start()
 	defer ts.Close()
 	client := NewHankoApiClient(testBaseUrl, testApiSecret, WithoutLogs())

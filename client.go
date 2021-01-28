@@ -87,7 +87,7 @@ func NewHankoApiClient(baseUrl string, secret string, opts ...Option) (client *H
 	return client
 }
 
-func (c *HankoApiClient) CreateHttpRequest(method string, requestUrl string, requestBody interface{}) (httpRequest *http.Request, err error) {
+func (c *HankoApiClient) NewHttpRequest(method string, requestUrl string, requestBody interface{}) (httpRequest *http.Request, err error) {
 	parsedRequestUrl, err := url.Parse(requestUrl)
 	if err != nil {
 		return nil, errors.Errorf("Failed to parse URL: '%s'", requestUrl)
@@ -98,13 +98,13 @@ func (c *HankoApiClient) CreateHttpRequest(method string, requestUrl string, req
 	if requestBody != nil {
 		err = json.NewEncoder(buf).Encode(requestBody)
 		if err != nil {
-			return nil, errors.Wrap(err, "Failed to encode the do")
+			return nil, errors.Wrap(err, "Failed to encode the requestBody")
 		}
 	}
 
 	httpRequest, err = http.NewRequest(method, parsedRequestUrl.String(), buf)
 	if err != nil {
-		return nil, errors.Wrap(err, "Failed to create do")
+		return nil, errors.Wrap(err, "Failed to create a new HTTP request")
 	}
 
 	httpRequest.Header.Add("Authorization", c.getAuthorizationHeader(method, parsedRequestUrl, buf))
@@ -113,8 +113,7 @@ func (c *HankoApiClient) CreateHttpRequest(method string, requestUrl string, req
 	return httpRequest, nil
 }
 
-func (c *HankoApiClient) getAuthorizationHeader(method string, url *url.URL, buf *bytes.Buffer) string {
-	var authHeader string
+func (c *HankoApiClient) getAuthorizationHeader(method string, url *url.URL, buf *bytes.Buffer) (authHeader string) {
 	if c.hmacApiKeyId != "" {
 		hmac := &HmacMessageData{
 			apiSecret:     c.secret,
@@ -130,14 +129,15 @@ func (c *HankoApiClient) getAuthorizationHeader(method string, url *url.URL, buf
 	return authHeader
 }
 
-func (c *HankoApiClient) decodeResponse(httpResponse *http.Response, responseType interface{}, ctxLogger *log.Entry) (err error) {
+func (c *HankoApiClient) decodeHttpResponse(httpResponse *http.Response, responseType interface{}, ctxLogger *log.Entry) (err error) {
+	responseTypeName := reflect.TypeOf(responseType).String()
 	body, err := ioutil.ReadAll(httpResponse.Body)
 	ctxLogger.WithField("raw_response", string(body)).Debug("Response body read")
 	err = json.Unmarshal(body, responseType)
 	if err != nil {
-		return errors.Wrap(err, "Failed to decode Hanko API response")
+		return errors.Wrapf(err, "Failed to decode Hanko API response (%s)", responseTypeName)
 	}
-	ctxLogger.Debugf("Response body (%s) decoded successfully", reflect.TypeOf(responseType).String())
+	ctxLogger.Debugf("Response body (%s) decoded successfully", responseTypeName)
 	return nil
 }
 
@@ -150,20 +150,20 @@ func (c *HankoApiClient) run(action string, method string, requestUrl string, re
 
 	ctxLogger.Debug("Creating Hanko API response")
 
-	httpRequest, err := c.CreateHttpRequest(method, requestUrl, requestBody)
+	httpRequest, err := c.NewHttpRequest(method, requestUrl, requestBody)
 	if err != nil {
 		ctxLogger.WithError(err).Error("HTTP request creation failed")
 		return err
 	}
 
-	httpResponse, err := c.do(httpRequest)
+	httpResponse, err := c.Do(httpRequest)
 	if err != nil {
 		ctxLogger.WithError(err).Error("Hanko API request failed")
 		return err
 	}
 
 	if responseType != nil {
-		err = c.decodeResponse(httpResponse, responseType, ctxLogger)
+		err = c.decodeHttpResponse(httpResponse, responseType, ctxLogger)
 		if err != nil {
 			ctxLogger.WithError(err).Error("Failed to decode Hanko API response")
 			return err
@@ -175,7 +175,7 @@ func (c *HankoApiClient) run(action string, method string, requestUrl string, re
 	return nil
 }
 
-func (c *HankoApiClient) do(httpRequest *http.Request) (httpResponse *http.Response, err error) {
+func (c *HankoApiClient) Do(httpRequest *http.Request) (httpResponse *http.Response, err error) {
 	httpResponse, err = c.httpClient.Do(httpRequest)
 	if err != nil {
 		return nil, errors.Wrap(err, "Could not do response")
@@ -187,18 +187,3 @@ func (c *HankoApiClient) do(httpRequest *http.Request) (httpResponse *http.Respo
 
 	return httpResponse, nil
 }
-
-//func (c *HankoApiClient) getCaller() string {
-//	fpcs := make([]uintptr, 1)
-//	n := runtime.Callers(3, fpcs)
-//	if n == 0 {
-//		panic("MSG: NO CALLER")
-//	}
-//
-//	caller := runtime.FuncForPC(fpcs[0]-1)
-//	if caller == nil {
-//		panic("MSG CALLER WAS NIL")
-//	}
-//
-//	return caller.Name()
-//}
