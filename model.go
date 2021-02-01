@@ -1,125 +1,101 @@
 package hankoApiClient
 
-import "time"
+import (
+	"gitlab.com/hanko/webauthn/credential"
+	"gitlab.com/hanko/webauthn/protocol"
+	"time"
+)
 
-type UserEntity struct {
-	// TODO
+// Misc
+
+type OperationStatus string
+
+type Error struct {
+	Message string `json:"message"`
+	Code    uint   `json:"code"`
 }
 
-type WebAuthnAuthenticator struct {
-	AaGuid     string
-	Name       string
-	Attachment string
+const (
+	Ok     OperationStatus = "ok"
+	Failed                 = "failed"
+)
+
+type User struct {
+	ID          string `json:"id"`
+	Name        string `json:"name"`
+	DisplayName string `json:"displayName"`
+	IconUrl     string `json:"icon"`
 }
 
-type AuthenticatorAttestationResponse struct {
-	ClientDataJSON    string
-	AttestationObject string
-}
-
-type AuthenticatorAssertionResponse struct {
-	ClientDataJSON    string
-	AttestationObject string
-	AuthenticatorData string
-	UserHandle        string
-}
-
-// WebAuthn Registration
-// - Initialization
+// WebAuthn Registration - Initialization
 
 type WebAuthnRegistrationInitializationRequest struct {
-	UserEntity UserEntity
-	Options    WebAuthnRegistrationInitializationRequestOptions
-}
-
-type WebAuthnAuthenticatorSelectionCriteria struct {
-	UserVerification        string `json:"userVerification"`
-	AuthenticatorAttachment string `json:"authenticatorAttachment"`
+	User    User                                             `json:"user"`
+	Options WebAuthnRegistrationInitializationRequestOptions `json:"options"`
 }
 
 type WebAuthnRegistrationInitializationRequestOptions struct {
-	AuthenticatorSelection WebAuthnAuthenticatorSelectionCriteria
-	Attestation            string
-	// TODO: Extensions
+	AuthenticatorSelection protocol.AuthenticatorSelection `json:"authenticatorSelection"`
+	ConveyancePreference   protocol.ConveyancePreference   `json:"conveyancePreference"`
 }
 
 type WebAuthnRegistrationInitializationResponse struct {
-	Challenge              string
-	RpId                   string
-	UserEntity             UserEntity
-	PubKeyCredParams       string
-	AuthenticatorSelection string
-	Timeout                string
-	ExcludeCredentials     string
-	// TODO: Extensions
-	Attestation string
+	protocol.PublicKeyCredentialCreationOptions
 }
 
-// - Finalization
+// WebAuthn Registration - Finalization
 
 type WebAuthnRegistrationFinalizationRequest struct {
-	Id       string
-	RawId    string
-	Type     string
-	Response AuthenticatorAttestationResponse
+	protocol.CredentialCreationResponse
 }
 
 type WebAuthnRegistrationFinalizationResponse struct {
-	Status     string
-	UserEntity UserEntity
-	Credential WebAuthnCredential
-	ErrorMsg   string
+	Status     OperationStatus       `json:"status"`
+	User       User                  `json:"user"`
+	Credential credential.Credential `json:"credential"`
+	Error      *Error                `json:"error,omitempty"`
 }
 
-// WebAuthn Authentication
-// - Initialization
+// WebAuthn Authentication - Initialization
 
 type WebAuthnAuthenticationInitializationRequestOptions struct {
-	UserVerification        string
-	AuthenticatorAttachment string
-	// TODO: Extension
+	UserVerification        protocol.UserVerificationRequirement `json:"userVerification"`
+	AuthenticatorAttachment protocol.AuthenticatorAttachment     `json:"authenticatorAttachment"`
 }
 
 type WebAuthnAuthenticationInitializationRequest struct {
-	UserEntity UserEntity
-	Options    WebAuthnAuthenticationInitializationRequestOptions
+	User    User                                               `json:"user"`
+	Options WebAuthnAuthenticationInitializationRequestOptions `json:"options"`
 }
 
 type WebAuthnAuthenticationInitializationResponse struct {
-	Challenge string
-	RpId      string
-	Timeout   string
-	// TODO: AllowCredentials
-	// TODO: Extensions
+	protocol.PublicKeyCredentialRequestOptions
 }
 
-// - Finalization
+// WebAuthn Authentication - Finalization
 type WebAuthnAuthenticationFinalizationRequest struct {
-	Id       string
-	RawId    string
-	Type     string
-	Response AuthenticatorAssertionResponse
+	protocol.CredentialAssertionResponse
 }
 
 type WebAuthnAuthenticationFinalizationResponse struct {
-	UserEntity UserEntity
-	Status     string
-	ErrorMsg   string
+	Status OperationStatus `json:"status"`
+	User   User            `json:"user"`
+	Error  *Error          `json:"error,omitempty"`
 }
 
-// Transactions
-// - Initialization
+// Transactions - Initialization
 
 type WebAuthnTransactionInitializationRequest struct {
 	WebAuthnAuthenticationInitializationRequest
-	Transaction string
+	Transaction string `json:"transaction"`
 }
 
 type WebAuthnTransactionInitializationResponse struct {
 	WebAuthnAuthenticationInitializationResponse
 }
 
-// - Finalization
+// Transactions - Finalization
+
 type WebAuthnTransactionFinalizationRequest struct {
 	WebAuthnAuthenticationFinalizationRequest
 }
@@ -128,26 +104,29 @@ type WebAuthnTransactionFinalizationResponse struct {
 	WebAuthnAuthenticationFinalizationResponse
 }
 
+// Credentials
+
 type WebAuthnCredentialQuery struct {
-	UserId   string `url:"user_id"`
-	PageSize uint   `url:"page_size"`
-	Page     uint   `url:"page"`
+	UserId   string `json:"user_id" url:"user_id"`
+	PageSize uint   `json:"page_size" url:"page_size"`
+	Page     uint   `json:"page" url:"page"`
+}
+
+type WebAuthnAuthenticator struct {
+	AaGuid     string `json:"aa_guid"`
+	Name       string `json:"name"`
+	Attachment string `json:"attachment"`
 }
 
 type WebAuthnCredential struct {
-	Id            string
-	CreatedAt     time.Time
-	LastUsed      time.Time
-	Name          string
-	Authenticator WebAuthnAuthenticator
+	Id            string                `json:"id"`
+	CreatedAt     time.Time             `json:"created_at"`
+	LastUsed      time.Time             `json:"last_used"`
+	Name          string                `json:"name"`
+	Authenticator WebAuthnAuthenticator `json:"authenticator"`
 }
 
 type WebAuthnCredentialUpdateRequest struct {
-	Name string
+	Name string `json:"name"`
 }
 
-// Error
-type ErrorResponse struct {
-	Code    uint
-	Message string
-}

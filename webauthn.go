@@ -86,10 +86,11 @@ func (c *HankoApiClient) FinalizeWebAuthnTransaction(requestBody *WebAuthnTransa
 	return response, err
 }
 
+// ListWebAuthnCredentials
 // TODO: Docs (pagination defaults...)
 func (c *HankoApiClient) ListWebAuthnCredentials(credentialQuery *WebAuthnCredentialQuery) (response *[]WebAuthnCredential, err error) {
 	response = &[]WebAuthnCredential{}
-	requestUrl := c.GetWebAuthnTransactionUrl()
+	requestUrl := c.GetWebAuthnCredentialsUrl()
 
 	values, err := query.Values(credentialQuery)
 	if err == nil {

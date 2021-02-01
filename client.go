@@ -33,6 +33,13 @@ func WithHmac(hmacApiKeyId string) Option {
 	}
 }
 
+func WithHttpClient(httpClient *http.Client) Option {
+	return func(client *HankoApiClient) *HankoApiClient {
+		client.httpClient = httpClient
+		return client
+	}
+}
+
 func WithLogger(logger *log.Logger) Option {
 	return func(client *HankoApiClient) *HankoApiClient {
 		client.log = logger
@@ -79,7 +86,7 @@ func NewHankoApiClient(baseUrl string, secret string, opts ...Option) (client *H
 
 	if client.hmacApiKeyId == "" {
 		client.log.Warn("HMAC authentication is disabled. " +
-			"Please provide a valid API Key ID using the WithHMAC() option.")
+			"Please provide a valid API Key ID using the WithHmac() option.")
 	}
 
 	client.log.Debugf("Hanko client created (base url: %s)", client.baseUrl)
@@ -112,6 +119,19 @@ func (c *HankoApiClient) NewHttpRequest(method string, requestUrl string, reques
 	httpRequest.Header.Add("Content-Type", "application/json")
 
 	return httpRequest, nil
+}
+
+func (c *HankoApiClient) Do(httpRequest *http.Request) (httpResponse *http.Response, err error) {
+	httpResponse, err = c.httpClient.Do(httpRequest)
+	if err != nil {
+		return nil, errors.Wrap(err, "Could not do response")
+	}
+
+	if !strings.HasPrefix(strconv.Itoa(httpResponse.StatusCode), "2") {
+		return nil, errors.Errorf("Response status not ok (got code: %s)", httpResponse.Status)
+	}
+
+	return httpResponse, nil
 }
 
 func (c *HankoApiClient) getAuthorizationHeader(method string, url *url.URL, body *bytes.Buffer) (authHeader string) {
@@ -176,15 +196,3 @@ func (c *HankoApiClient) run(action string, method string, requestUrl string, re
 	return nil
 }
 
-func (c *HankoApiClient) Do(httpRequest *http.Request) (httpResponse *http.Response, err error) {
-	httpResponse, err = c.httpClient.Do(httpRequest)
-	if err != nil {
-		return nil, errors.Wrap(err, "Could not do response")
-	}
-
-	if !strings.HasPrefix(strconv.Itoa(httpResponse.StatusCode), "2") {
-		return nil, errors.Errorf("Response status not ok (got code: %s)", httpResponse.Status)
-	}
-
-	return httpResponse, nil
-}
