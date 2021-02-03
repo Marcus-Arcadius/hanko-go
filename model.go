@@ -107,21 +107,21 @@ type WebAuthnTransactionFinalizationResponse struct {
 // Credentials
 
 type WebAuthnCredentialQuery struct {
-	UserId   string `json:"user_id" url:"user_id"`
-	PageSize uint   `json:"page_size" url:"page_size"`
+	UserId   string `json:"userId" url:"userId"`
+	PageSize uint   `json:"pageSize" url:"pageSize"`
 	Page     uint   `json:"page" url:"page"`
 }
 
 type WebAuthnAuthenticator struct {
-	AaGuid     string `json:"aa_guid"`
+	AaGuid     string `json:"aaGuid"`
 	Name       string `json:"name"`
 	Attachment string `json:"attachment"`
 }
 
 type WebAuthnCredential struct {
 	Id            string                `json:"id"`
-	CreatedAt     time.Time             `json:"created_at"`
-	LastUsed      time.Time             `json:"last_used"`
+	CreatedAt     time.Time             `json:"createdAt"`
+	LastUsed      time.Time             `json:"lastUsed"`
 	Name          string                `json:"name"`
 	Authenticator WebAuthnAuthenticator `json:"authenticator"`
 }
