@@ -85,8 +85,8 @@ func NewHankoApiClient(baseUrl string, secret string, opts ...Option) (client *H
 	}
 
 	if client.hmacApiKeyId == "" {
-		client.log.Warn("HMAC authentication is disabled. " +
-			"Please provide a valid API Key ID using the WithHmac() option.")
+		client.log.Warn("hmac authentication is disabled. " +
+			"please provide a valid api key id using the WithHmac() option.")
 	}
 
 	client.log.Debugf("Hanko client created (base url: %s)", client.baseUrl)
@@ -97,7 +97,7 @@ func NewHankoApiClient(baseUrl string, secret string, opts ...Option) (client *H
 func (c *HankoApiClient) NewHttpRequest(method string, requestUrl string, requestBody interface{}) (httpRequest *http.Request, err error) {
 	parsedRequestUrl, err := url.Parse(requestUrl)
 	if err != nil {
-		return nil, errors.Errorf("Failed to parse URL: '%s'", requestUrl)
+		return nil, errors.Errorf("failed to parse url: '%s'", requestUrl)
 	}
 
 	encodedRequestBody := new(bytes.Buffer)
@@ -105,13 +105,13 @@ func (c *HankoApiClient) NewHttpRequest(method string, requestUrl string, reques
 	if requestBody != nil {
 		err = json.NewEncoder(encodedRequestBody).Encode(requestBody)
 		if err != nil {
-			return nil, errors.Wrap(err, "Failed to encode the requestBody")
+			return nil, errors.Wrap(err, "failed to encode the request body")
 		}
 	}
 
 	httpRequest, err = http.NewRequest(method, parsedRequestUrl.String(), encodedRequestBody)
 	if err != nil {
-		return nil, errors.Wrap(err, "Failed to create a new HTTP request")
+		return nil, errors.Wrap(err, "failed to create a new http request")
 	}
 
 	authorizationHeader := c.getAuthorizationHeader(method, parsedRequestUrl, encodedRequestBody)
@@ -124,11 +124,11 @@ func (c *HankoApiClient) NewHttpRequest(method string, requestUrl string, reques
 func (c *HankoApiClient) Do(httpRequest *http.Request) (httpResponse *http.Response, err error) {
 	httpResponse, err = c.httpClient.Do(httpRequest)
 	if err != nil {
-		return nil, errors.Wrap(err, "Could not do response")
+		return nil, errors.Wrap(err, "could not do request")
 	}
 
 	if !strings.HasPrefix(strconv.Itoa(httpResponse.StatusCode), "2") {
-		return nil, errors.Errorf("Response status not ok (got code: %s)", httpResponse.Status)
+		return httpResponse, errors.Errorf("got status code: %s", httpResponse.Status)
 	}
 
 	return httpResponse, nil
@@ -153,12 +153,12 @@ func (c *HankoApiClient) getAuthorizationHeader(method string, url *url.URL, bod
 func (c *HankoApiClient) decodeHttpResponse(httpResponse *http.Response, responseType interface{}, ctxLogger *log.Entry) (err error) {
 	responseTypeName := reflect.TypeOf(responseType).String()
 	body, err := ioutil.ReadAll(httpResponse.Body)
-	ctxLogger.WithField("raw_response", string(body)).Debug("Response body read")
+	ctxLogger.WithField("raw_response", string(body)).Debug("response body read")
 	err = json.Unmarshal(body, responseType)
 	if err != nil {
-		return errors.Wrapf(err, "Failed to decode Hanko API response (%s)", responseTypeName)
+		return errors.Wrapf(err, "failed to decode hanko api response (%s)", responseTypeName)
 	}
-	ctxLogger.Debugf("Response body (%s) decoded successfully", responseTypeName)
+	ctxLogger.Debugf("http response body decoded successfully into a %s type", responseTypeName)
 	return nil
 }
 
@@ -169,30 +169,34 @@ func (c *HankoApiClient) run(action string, method string, requestUrl string, re
 		"url":    requestUrl,
 	})
 
-	ctxLogger.Debug("Creating Hanko API response")
-
 	httpRequest, err := c.NewHttpRequest(method, requestUrl, requestBody)
 	if err != nil {
-		ctxLogger.WithError(err).Error("HTTP request creation failed")
+		ctxLogger.WithError(err).Error("http request creation failed")
 		return err
 	}
 
 	httpResponse, err := c.Do(httpRequest)
 	if err != nil {
-		ctxLogger.WithError(err).Error("Hanko API request failed")
+		if httpResponse != nil {
+			apiErr := &Error{}
+			if decErr := c.decodeHttpResponse(httpResponse, apiErr, ctxLogger); decErr == nil {
+				ctxLogger.WithError(err).Error(apiErr.Message)
+				return errors.New(apiErr.Message)
+			}
+		}
+		ctxLogger.WithError(err).Error("hanko api call failed")
 		return err
 	}
 
 	if responseType != nil {
 		err = c.decodeHttpResponse(httpResponse, responseType, ctxLogger)
 		if err != nil {
-			ctxLogger.WithError(err).Error("Failed to decode Hanko API response")
+			ctxLogger.WithError(err).Error("failed to decode the hanko api response")
 			return err
 		}
 	}
 
-	ctxLogger.Info("Hanko API request succeeded")
+	ctxLogger.Info("hanko api call succeeded")
 
 	return nil
 }
-
