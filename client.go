@@ -175,10 +175,14 @@ func (c *HankoApiClient) run(action string, method string, requestUrl string, re
 		"url":    requestUrl,
 	})
 
-	ctxLogger.WithFields(log.Fields{
-		"request_type": reflect.TypeOf(requestBody).String(),
-		"request":      fmt.Sprintf("%+v", requestBody),
-	}).Debug("new http request")
+	if requestBody != nil {
+		ctxLogger = ctxLogger.WithFields(log.Fields{
+			"request_type": reflect.TypeOf(requestBody).String(),
+			"request":      fmt.Sprintf("%+v", requestBody),
+		})
+	}
+
+	ctxLogger.Debug("new http request")
 
 	httpRequest, err := c.NewHttpRequest(method, requestUrl, requestBody)
 	if err != nil {
