@@ -101,11 +101,10 @@ func (c *HankoApiClient) NewHttpRequest(method string, requestUrl string, reques
 	}
 
 	encodedRequestBody := new(bytes.Buffer)
-
 	if requestBody != nil {
 		err = json.NewEncoder(encodedRequestBody).Encode(requestBody)
 		if err != nil {
-			return nil, errors.Wrap(err, "failed to encode the request body")
+			return nil, errors.Wrap(err, "failed to encode http request body")
 		}
 	}
 
@@ -153,12 +152,19 @@ func (c *HankoApiClient) getAuthorizationHeader(method string, url *url.URL, bod
 func (c *HankoApiClient) decodeHttpResponse(httpResponse *http.Response, responseType interface{}, ctxLogger *log.Entry) (err error) {
 	responseTypeName := reflect.TypeOf(responseType).String()
 	body, err := ioutil.ReadAll(httpResponse.Body)
-	ctxLogger.WithField("raw_response", string(body)).Debug("response body read")
+	if err != nil {
+		return errors.Wrap(err, "failed to read http response body")
+	}
+	ctxLogger.WithField("raw_response", string(body)).Debug("http response body read")
 	err = json.Unmarshal(body, responseType)
 	if err != nil {
-		return errors.Wrapf(err, "failed to decode hanko api response (%s)", responseTypeName)
+		ctxLogger.WithField("response_type", responseTypeName).Error("failed to decode http response")
+		return errors.Wrap(err, "failed to decode http response")
 	}
-	ctxLogger.Debugf("http response body decoded successfully into a %s type", responseTypeName)
+	ctxLogger.WithFields(log.Fields{
+		"decoded_response": fmt.Sprintf("%+v", responseType),
+		"response_type":    responseTypeName,
+	}).Debug("http response body decoded")
 	return nil
 }
 
@@ -169,9 +175,14 @@ func (c *HankoApiClient) run(action string, method string, requestUrl string, re
 		"url":    requestUrl,
 	})
 
+	ctxLogger.WithFields(log.Fields{
+		"request_type": reflect.TypeOf(requestBody).String(),
+		"request":      fmt.Sprintf("%+v", requestBody),
+	}).Debug("new http request")
+
 	httpRequest, err := c.NewHttpRequest(method, requestUrl, requestBody)
 	if err != nil {
-		ctxLogger.WithError(err).Error("http request creation failed")
+		ctxLogger.WithError(err).Error("failed to create http request")
 		return err
 	}
 
@@ -197,6 +208,5 @@ func (c *HankoApiClient) run(action string, method string, requestUrl string, re
 	}
 
 	ctxLogger.Info("hanko api call succeeded")
-
 	return nil
 }

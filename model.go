@@ -1,7 +1,6 @@
 package hankoApiClient
 
 import (
-	"gitlab.com/hanko/webauthn/credential"
 	"gitlab.com/hanko/webauthn/protocol"
 	"time"
 )
@@ -50,10 +49,16 @@ type WebAuthnRegistrationFinalizationRequest struct {
 }
 
 type WebAuthnRegistrationFinalizationResponse struct {
-	Status     OperationStatus       `json:"status"`
-	User       User                  `json:"user"`
-	Credential credential.Credential `json:"credential"`
-	Error      *Error                `json:"error,omitempty"`
+	Status     OperationStatus     `json:"status"`
+	User       User                `json:"user"`
+	Credential *WebauthnCredential `json:"credential"`
+	Error      *Error              `json:"error,omitempty"`
+}
+
+type WebauthnAuthenticator struct {
+	Aaguid     string `json:"aaguid,omitempty"`
+	Name       string `json:"name,omitempty"`
+	Attachment string `json:"attachment,omitempty"`
 }
 
 // WebAuthn Authentication - Initialization
@@ -83,7 +88,7 @@ type WebAuthnAuthenticationFinalizationResponse struct {
 	Error  *Error          `json:"error,omitempty"`
 }
 
-// Transactions - Initialization
+// WebAuthn Transactions - Initialization
 
 type WebAuthnTransactionInitializationRequest struct {
 	WebAuthnAuthenticationInitializationRequest
@@ -94,7 +99,7 @@ type WebAuthnTransactionInitializationResponse struct {
 	WebAuthnAuthenticationInitializationResponse
 }
 
-// Transactions - Finalization
+// WebAuthn Transactions - Finalization
 
 type WebAuthnTransactionFinalizationRequest struct {
 	WebAuthnAuthenticationFinalizationRequest
@@ -104,29 +109,24 @@ type WebAuthnTransactionFinalizationResponse struct {
 	WebAuthnAuthenticationFinalizationResponse
 }
 
-// Credentials
+// WebAuthn Credentials
 
 type WebAuthnCredentialQuery struct {
-	UserId   string `json:"userId" url:"userId"`
-	PageSize uint   `json:"pageSize" url:"pageSize"`
+	UserId   string `json:"user_id" url:"user_id"`
+	PageSize uint   `json:"page_size" url:"page_size"`
 	Page     uint   `json:"page" url:"page"`
 }
 
-type WebAuthnAuthenticator struct {
-	AaGuid     string `json:"aaGuid"`
-	Name       string `json:"name"`
-	Attachment string `json:"attachment"`
-}
-
-type WebAuthnCredential struct {
-	Id            string                `json:"id"`
-	CreatedAt     time.Time             `json:"createdAt"`
-	LastUsed      time.Time             `json:"lastUsed"`
-	Name          string                `json:"name"`
-	Authenticator WebAuthnAuthenticator `json:"authenticator"`
+type WebauthnCredential struct {
+	Id               string                 `json:"id"`
+	CreatedAt        time.Time              `json:"createdAt"`
+	LastUsed         time.Time              `json:"lastUsed"`
+	Name             string                 `json:"name"`
+	UserVerification bool                   `json:"userVerification"`
+	IsResidentKey    bool                   `json:"isResidentKey"`
+	Authenticator    *WebauthnAuthenticator `json:"authenticator,omitempty"`
 }
 
 type WebAuthnCredentialUpdateRequest struct {
 	Name string `json:"name"`
 }
-
