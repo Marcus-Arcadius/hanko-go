@@ -7,6 +7,6 @@ require (
 	github.com/google/uuid v1.1.1
 	github.com/pkg/errors v0.9.1
 	github.com/sirupsen/logrus v1.7.0
-	github.com/teamhanko/webauthn v0.0.0-20210210072018-4f94fd83a0e3 // indirect
+	github.com/teamhanko/webauthn v0.0.0-20210210072018-4f94fd83a0e3
 
 )
