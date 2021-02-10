@@ -1,7 +1,7 @@
 package hankoApiClient
 
 import (
-	"gitlab.com/hanko/webauthn/protocol"
+	"github.com/teamhanko/webauthn/protocol"
 	"time"
 )
 

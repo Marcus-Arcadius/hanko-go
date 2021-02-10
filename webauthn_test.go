@@ -90,7 +90,7 @@ func TestHankoApiClient_TransactionFinalization(t *testing.T) {
 }
 
 func TestHankoApiClient_ListWebAuthnCredentials(t *testing.T) {
-	responseType := &[]WebAuthnCredential{}
+	responseType := &[]WebauthnCredential{}
 	ts := runTestApi(nil, responseType, http.StatusOK)
 	ts.Start()
 	defer ts.Close()
@@ -103,7 +103,7 @@ func TestHankoApiClient_ListWebAuthnCredentials(t *testing.T) {
 }
 
 func TestHankoApiClient_GetWebAuthnCredential(t *testing.T) {
-	responseType := &WebAuthnCredential{}
+	responseType := &WebauthnCredential{}
 	ts := runTestApi(nil, responseType, http.StatusOK)
 	ts.Start()
 	defer ts.Close()
@@ -129,7 +129,7 @@ func TestHankoApiClient_DeleteWebAuthnCredential(t *testing.T) {
 
 func TestHankoApiClient_UpdateWebAuthnCredential(t *testing.T) {
 	requestBody := &WebAuthnCredentialUpdateRequest{}
-	responseType := &WebAuthnCredential{}
+	responseType := &WebauthnCredential{}
 	ts := runTestApi(requestBody, responseType, http.StatusOK)
 	ts.Start()
 	defer ts.Close()
