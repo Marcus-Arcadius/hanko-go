@@ -35,7 +35,7 @@ type WebAuthnRegistrationInitializationRequest struct {
 
 type WebAuthnRegistrationInitializationRequestOptions struct {
 	AuthenticatorSelection protocol.AuthenticatorSelection `json:"authenticatorSelection"`
-	ConveyancePreference   protocol.ConveyancePreference   `json:"conveyancePreference"`
+	ConveyancePreference   protocol.ConveyancePreference   `json:"attestation"`
 }
 
 type WebAuthnRegistrationInitializationResponse struct {
