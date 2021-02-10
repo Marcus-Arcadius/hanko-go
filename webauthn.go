@@ -88,8 +88,8 @@ func (c *HankoApiClient) FinalizeWebAuthnTransaction(requestBody *WebAuthnTransa
 
 // ListWebAuthnCredentials
 // TODO: Docs (pagination defaults...)
-func (c *HankoApiClient) ListWebAuthnCredentials(credentialQuery *WebAuthnCredentialQuery) (response *[]WebAuthnCredential, err error) {
-	response = &[]WebAuthnCredential{}
+func (c *HankoApiClient) ListWebAuthnCredentials(credentialQuery *WebAuthnCredentialQuery) (response *[]WebauthnCredential, err error) {
+	response = &[]WebauthnCredential{}
 	requestUrl := c.GetWebAuthnCredentialsUrl()
 
 	values, err := query.Values(credentialQuery)
@@ -102,8 +102,8 @@ func (c *HankoApiClient) ListWebAuthnCredentials(credentialQuery *WebAuthnCreden
 }
 
 // TODO: Docs
-func (c *HankoApiClient) GetWebAuthnCredential(credentialId string) (response *WebAuthnCredential, err error) {
-	response = &WebAuthnCredential{}
+func (c *HankoApiClient) GetWebAuthnCredential(credentialId string) (response *WebauthnCredential, err error) {
+	response = &WebauthnCredential{}
 	requestUrl := fmt.Sprintf("%s/%s", c.GetWebAuthnCredentialsUrl(), credentialId)
 	err = c.run("get webauthn credential", http.MethodGet, requestUrl, nil, response)
 	return response, err
@@ -116,8 +116,8 @@ func (c *HankoApiClient) DeleteWebAuthnCredential(credentialId string) (err erro
 }
 
 // TODO: Docs
-func (c *HankoApiClient) UpdateWebAuthnCredential(credentialId string, requestBody *WebAuthnCredentialUpdateRequest) (response *WebAuthnCredential, err error) {
-	response = &WebAuthnCredential{}
+func (c *HankoApiClient) UpdateWebAuthnCredential(credentialId string, requestBody *WebAuthnCredentialUpdateRequest) (response *WebauthnCredential, err error) {
+	response = &WebauthnCredential{}
 	requestUrl := fmt.Sprintf("%s/%s", c.GetWebAuthnCredentialsUrl(), credentialId)
 	err = c.run("update webauthn credential", http.MethodPut, requestUrl, requestBody, response)
 	return response, err
