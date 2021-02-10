@@ -1,32 +1,70 @@
 package hankoApiClient
 
 import (
-	"github.com/google/uuid"
+	"fmt"
+	"net/http"
+	"strings"
 	"testing"
 )
 
-var apiHost = "https://api.dev.hanko.io"
-var apiSecret = "17a1b9585cc92782d6017324c77887b283427e8076a2e775dbd7570"
-var apiKeyId = "747cd24f-5e91-4b56-8738-7548d8ce3ea2"
-
-func TestHankoApiClient_Request(t *testing.T) {
-	client := NewHankoApiClient(apiHost, apiSecret)
-	res, err := client.InitWebauthnRegistration(uuid.New().String(), "testuser@hanko.io")
+func TestHankoApiClient_NewHttpRequestWithHmac(t *testing.T) {
+	client := NewHankoApiClient(testBaseUrl, testApiSecret, WithHmac(testHmacApiKeyId), WithoutLogs())
+	requestBody := &struct{ foo string }{"bar"}
+	request, err := client.NewHttpRequest(http.MethodPost, "/test", &requestBody)
 	if err != nil {
+		t.Error(err)
 		t.Fail()
 	}
-	if res.Status != "PENDING" {
+	authorizationHeader := request.Header.Get("Authorization")
+	if !strings.HasPrefix(authorizationHeader, "hanko eyJobWFjQXBpS2V5SWQ") {
+		t.Errorf("wrong authorization header, got: %s", authorizationHeader)
 		t.Fail()
 	}
 }
 
-func TestHankoHmacClient_Request(t *testing.T) {
-	client := NewHankoHmacClient(apiHost, apiSecret, apiKeyId)
-	res, err := client.InitWebauthnRegistration(uuid.New().String(), "testuser@hanko.io")
+func TestHankoApiClient_NewHttpRequestWithoutHmac(t *testing.T) {
+	client := NewHankoApiClient(testBaseUrl, testApiSecret, WithoutLogs())
+	requestBody := &struct{ foo string }{"bar"}
+	request, err := client.NewHttpRequest(http.MethodPost, "/test", requestBody)
 	if err != nil {
+		t.Error(err)
 		t.Fail()
 	}
-	if res.Status != "PENDING" {
+	authorizationHeader := request.Header.Get("Authorization")
+	if authorizationHeader != fmt.Sprintf("secret %s", testApiSecret) {
+		t.Errorf("wrong authorization header, got: %s", authorizationHeader)
 		t.Fail()
 	}
+}
+
+func TestHankoApiClient_Do(t *testing.T) {
+	client := NewHankoApiClient(testBaseUrl, testApiSecret, WithoutLogs())
+	httpRequest, err := http.NewRequest(http.MethodPost, testBaseUrl, nil)
+
+	ts := runTestApi(nil, nil, http.StatusOK)
+	ts.Start()
+	_, err = client.Do(httpRequest)
+	if err != nil {
+		t.Error("no error expected")
+		t.Fail()
+	}
+	ts.Close()
+
+	ts = runTestApi(nil, nil, http.StatusCreated)
+	ts.Start()
+	_, err = client.Do(httpRequest)
+	if err != nil {
+		t.Error("no error expected")
+		t.Fail()
+	}
+	ts.Close()
+
+	ts = runTestApi(nil, nil, http.StatusBadRequest)
+	ts.Start()
+	_, err = client.Do(httpRequest)
+	if err == nil {
+		t.Error("error expected")
+		t.Fail()
+	}
+	ts.Close()
 }

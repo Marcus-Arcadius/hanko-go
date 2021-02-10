@@ -20,7 +20,7 @@ type HmacMessageData struct {
 }
 
 type HmacJson struct {
-	ApiKeyId	string `json:"apiKeyId"`
+	ApiKeyId	string `json:"hmacApiKeyId"`
 	Time		string `json:"time"`
 	Nonce		string `json:"nonce"`
 	Signature	string `json:"signature"`

@@ -3,206 +3,214 @@ package hankoApiClient
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"github.com/pkg/errors"
+	log "github.com/sirupsen/logrus"
 	"io/ioutil"
-	"log"
 	"net/http"
+	"net/url"
+	"reflect"
+	"strconv"
+	"strings"
 )
 
 // HankoApiClient Provides Methods for interacting with the Hanko API
 type HankoApiClient struct {
-	baseUrl    string
-	secret     string
-	apiKeyId   string
-	httpClient http.Client
-	apiVersion string
+	baseUrl      string
+	apiVersion   string
+	secret       string
+	hmacApiKeyId string
+	httpClient   *http.Client
+	log          *log.Logger
+}
+
+type Option func(client *HankoApiClient) *HankoApiClient
+
+func WithHmac(hmacApiKeyId string) Option {
+	return func(client *HankoApiClient) *HankoApiClient {
+		client.hmacApiKeyId = hmacApiKeyId
+		return client
+	}
+}
+
+func WithHttpClient(httpClient *http.Client) Option {
+	return func(client *HankoApiClient) *HankoApiClient {
+		client.httpClient = httpClient
+		return client
+	}
+}
+
+func WithLogger(logger *log.Logger) Option {
+	return func(client *HankoApiClient) *HankoApiClient {
+		client.log = logger
+		return client
+	}
+}
+
+func WithoutLogs() Option {
+	return func(client *HankoApiClient) *HankoApiClient {
+		client.log.Out = ioutil.Discard
+		return client
+	}
+}
+
+func WithLogLevel(level log.Level) Option {
+	return func(client *HankoApiClient) *HankoApiClient {
+		client.log.SetLevel(level)
+		return client
+	}
+}
+
+func WithLogFormatter(formatter log.Formatter) Option {
+	return func(client *HankoApiClient) *HankoApiClient {
+		client.log.SetFormatter(formatter)
+		return client
+	}
 }
 
 // Returns a HankoApiClient give it the base url e.g. https://api.hanko.io and your API Secret
-func NewHankoApiClient(baseUrl string, secret string) *HankoApiClient {
-	return &HankoApiClient{
+func NewHankoApiClient(baseUrl string, secret string, opts ...Option) (client *HankoApiClient) {
+	client = &HankoApiClient{
 		baseUrl:    baseUrl,
 		secret:     secret,
 		apiVersion: "v1",
+		log:        log.New(),
+		httpClient: &http.Client{},
 	}
-}
 
-// Returns new client with capabilities for calculating an HMAC
-func NewHankoHmacClient(baseUrl string, secret string, apiKeyId string) *HankoApiClient {
-	return &HankoApiClient{
-		baseUrl:    baseUrl,
-		secret:     secret,
-		apiKeyId:   apiKeyId,
-		apiVersion: "v1",
+	client.log.SetFormatter(&log.JSONFormatter{})
+
+	for _, opt := range opts {
+		client = opt(client)
 	}
-}
 
-func (client *HankoApiClient) GetWebAuthnUrl() (url string) {
-	return "/" + client.apiVersion + "/webauthn/requests"
-}
-
-func (client *HankoApiClient) GetUafUrl() (url string) {
-	return "/" + client.apiVersion + "/uaf/requests"
-}
-
-// WEBAUTHN ------------------------------------------------------------------------------------------------------------
-
-// InitWebauthnRegistration initiates the Registration of an Authenticator. Pass the result from the Hanko API to the
-// WebAuthn API of the Browser to get it signed. The result has to be send back with FinalizeWebauthnOperation to finalize
-// the Registration Flow.
-func (client *HankoApiClient) InitWebauthnRegistration(userId string, userName string) (*Response, error) {
-	req := &Request{
-		Operation: REG,
-		Username:  userName,
-		UserId:    userId,
+	if client.hmacApiKeyId == "" {
+		client.log.Warn("hmac authentication is disabled. " +
+			"please provide a valid api key id using the WithHmac() option.")
 	}
-	return client.InitOperation(client.GetWebAuthnUrl(), req)
+
+	client.log.Debugf("Hanko client created (base url: %s)", client.baseUrl)
+
+	return client
 }
 
-// InitWebAuthnAuthentication initiates the Authentication Flow. Pass the challenge from the Hanko API to the
-// WebAuthn API of the Browser to get it signed. The result has to be send back with FinalizeWebauthnOperation to finalize
-// the Registration Flow.
-func (client *HankoApiClient) InitWebAuthnAuthentication(userId string, userName string) (*Response, error) {
-	req := &Request{
-		Operation: AUTH,
-		Username:  userName,
-		UserId:    userId,
-	}
-	return client.InitOperation(client.GetWebAuthnUrl(), req)
-}
-
-// InitWebAuthnDeRegistration de-registers an Authenticator Device. This Operation doesn't need to be finalized.
-func (client *HankoApiClient) InitWebAuthnDeRegistration(userId string, userName string) (*Response, error) {
-	req := &Request{
-		Operation: DEREG,
-		Username:  userName,
-		UserId:    userId,
-	}
-	return client.InitOperation(client.GetWebAuthnUrl(), req)
-}
-
-// FinalizeWebAuthnOperation Is the last step to either Register or Authenticate an WebAuthn Request. Pass the result of
-// the WebAuthn API call of the Browser to this method.
-func (client *HankoApiClient) FinalizeWebAuthnOperation(requestId string, request *HankoCredentialRequest) (*Response, error) {
-	return client.FinalizeOperation(client.GetWebAuthnUrl(), requestId, request)
-}
-
-// GetWebauthnRequestStatus Returns a status Response of a running request
-func (client *HankoApiClient) GetWebauthnRequestStatus(requestId string) (*Response, error) {
-	return client.GetRequestStatus(client.GetWebAuthnUrl(), requestId)
-}
-
-// UAF -----------------------------------------------------------------------------------------------------------------
-
-func (client *HankoApiClient) InitUafRegistration(userId string, userName string) (*Response, error) {
-	req := &Request{
-		Operation: REG,
-		Username:  userName,
-		UserId:    userId,
-	}
-	return client.InitOperation(client.GetUafUrl(), req)
-}
-
-func (client *HankoApiClient) InitUafAuthentication(userId string, userName string) (*Response, error) {
-	req := &Request{
-		Operation: AUTH,
-		Username:  userName,
-		UserId:    userId,
-	}
-	return client.InitOperation(client.GetUafUrl(), req)
-}
-
-func (client *HankoApiClient) InitUafDeRegistration(userId string, userName string) (*Response, error) {
-	req := &Request{
-		Operation: DEREG,
-		Username:  userName,
-		UserId:    userId,
-	}
-	return client.InitOperation(client.GetUafUrl(), req)
-}
-
-func (client *HankoApiClient) GetUafRequestStatus(requestId string) (*Response, error) {
-	return client.GetRequestStatus(client.GetUafUrl(), requestId)
-}
-
-// GENERIC -------------------------------------------------------------------------------------------------------------
-
-func (client *HankoApiClient) InitOperation(path string, request *Request) (*Response, error) {
-	return client.Request(http.MethodPost, path, request)
-}
-
-func (client *HankoApiClient) FinalizeOperation(path string, requestId string, request *HankoCredentialRequest) (*Response, error) {
-	return client.Request(http.MethodPut, path+"/"+requestId, request)
-}
-
-func (client *HankoApiClient) GetRequestStatus(path string, requestId string) (*Response, error) {
-	return client.Request(http.MethodGet, path+"/"+requestId, nil)
-}
-
-// Request does an AUTH/REG/DEREG based Request to the Hanko API
-func (client *HankoApiClient) Request(method string, path string, request interface{}) (*Response, error) {
-	resp, err := client.doRequest(method, path, request)
+func (c *HankoApiClient) NewHttpRequest(method string, requestUrl string, requestBody interface{}) (httpRequest *http.Request, err error) {
+	parsedRequestUrl, err := url.Parse(requestUrl)
 	if err != nil {
-		return nil, err
+		return nil, errors.Errorf("failed to parse url: '%s'", requestUrl)
 	}
 
-	apiResp := &Response{}
-	body, err := ioutil.ReadAll(resp.Body)
-	log.Printf("api raw response: %s", string(body))
-
-	err = json.Unmarshal(body, apiResp)
-	//dec := json.NewDecoder(resp.Body)
-	//err = dec.Decode(apiResp)
-	if err != nil {
-
-
-		return nil, errors.Wrap(err, "failed to decode the response")
-	}
-
-	return apiResp, nil
-}
-
-// doRequest does a generic Request to the Hanko API
-func (client *HankoApiClient) doRequest(method string, path string, request interface{}) (*http.Response, error) {
-	var err error
-
-	buf := new(bytes.Buffer)
-	if request != nil {
-		err = json.NewEncoder(buf).Encode(request)
+	encodedRequestBody := new(bytes.Buffer)
+	if requestBody != nil {
+		err = json.NewEncoder(encodedRequestBody).Encode(requestBody)
 		if err != nil {
-			return nil, errors.Wrap(err, "failed to encode the request")
+			return nil, errors.Wrap(err, "failed to encode http request body")
 		}
 	}
 
-	req, err := http.NewRequest(method, client.baseUrl+path, buf)
+	httpRequest, err = http.NewRequest(method, parsedRequestUrl.String(), encodedRequestBody)
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to create request %s %s", method, client.baseUrl+path)
+		return nil, errors.Wrap(err, "failed to create a new http request")
 	}
 
-	if client.apiKeyId != "" {
-		hmac := CalculateHmac(&HmacMessageData{
-			apiSecret:     client.secret,
-			apiKeyId:      client.apiKeyId,
+	authorizationHeader := c.getAuthorizationHeader(method, parsedRequestUrl, encodedRequestBody)
+	httpRequest.Header.Add("Authorization", authorizationHeader)
+	httpRequest.Header.Add("Content-Type", "application/json")
+
+	return httpRequest, nil
+}
+
+func (c *HankoApiClient) Do(httpRequest *http.Request) (httpResponse *http.Response, err error) {
+	httpResponse, err = c.httpClient.Do(httpRequest)
+	if err != nil {
+		return nil, errors.Wrap(err, "could not do request")
+	}
+
+	if !strings.HasPrefix(strconv.Itoa(httpResponse.StatusCode), "2") {
+		return httpResponse, errors.Errorf("got status code: %s", httpResponse.Status)
+	}
+
+	return httpResponse, nil
+}
+
+func (c *HankoApiClient) getAuthorizationHeader(method string, url *url.URL, body *bytes.Buffer) (authHeader string) {
+	if c.hmacApiKeyId != "" {
+		hmac := &HmacMessageData{
+			apiSecret:     c.secret,
+			apiKeyId:      c.hmacApiKeyId,
 			requestMethod: method,
-			requestPath:   path,
-			requestBody:   buf.String(),
-		})
-
-		req.Header.Add("Authorization", "HANKO "+hmac)
+			requestPath:   url.Path,
+			requestBody:   body.String(),
+		}
+		authHeader = fmt.Sprintf("hanko %s", CalculateHmac(hmac))
 	} else {
-		req.Header.Add("Authorization", "secret "+client.secret)
+		authHeader = fmt.Sprintf("secret %s", c.secret)
 	}
+	return authHeader
+}
 
-	req.Header.Add("Content-Type", "application/json")
-	resp, err := client.httpClient.Do(req)
-
+func (c *HankoApiClient) decodeHttpResponse(httpResponse *http.Response, responseType interface{}, ctxLogger *log.Entry) (err error) {
+	responseTypeName := reflect.TypeOf(responseType).String()
+	body, err := ioutil.ReadAll(httpResponse.Body)
 	if err != nil {
-		return nil, errors.Wrapf(err, "could not do request: %s %s%s", method, client.baseUrl, path)
+		return errors.Wrap(err, "failed to read http response body")
+	}
+	ctxLogger.WithField("raw_response", string(body)).Debug("http response body read")
+	err = json.Unmarshal(body, responseType)
+	if err != nil {
+		ctxLogger.WithField("response_type", responseTypeName).Error("failed to decode http response")
+		return errors.Wrap(err, "failed to decode http response")
+	}
+	ctxLogger.WithFields(log.Fields{
+		"decoded_response": fmt.Sprintf("%+v", responseType),
+		"response_type":    responseTypeName,
+	}).Debug("http response body decoded")
+	return nil
+}
+
+func (c *HankoApiClient) run(action string, method string, requestUrl string, requestBody interface{}, responseType interface{}) error {
+	ctxLogger := c.log.WithFields(log.Fields{
+		"action": action,
+		"method": method,
+		"url":    requestUrl,
+	})
+
+	if requestBody != nil {
+		ctxLogger = ctxLogger.WithFields(log.Fields{
+			"request_type": reflect.TypeOf(requestBody).String(),
+			"request":      fmt.Sprintf("%+v", requestBody),
+		})
 	}
 
-	if resp.StatusCode != http.StatusOK {
-		return nil, errors.Errorf("request (%s %s%s) failed, got: %s", method, client.baseUrl, path, resp.Status)
+	ctxLogger.Debug("new http request")
+
+	httpRequest, err := c.NewHttpRequest(method, requestUrl, requestBody)
+	if err != nil {
+		ctxLogger.WithError(err).Error("failed to create http request")
+		return err
 	}
 
-	return resp, nil
+	httpResponse, err := c.Do(httpRequest)
+	if err != nil {
+		if httpResponse != nil {
+			apiErr := &Error{}
+			if decErr := c.decodeHttpResponse(httpResponse, apiErr, ctxLogger); decErr == nil {
+				ctxLogger.WithError(err).Error(apiErr.Message)
+				return errors.New(apiErr.Message)
+			}
+		}
+		ctxLogger.WithError(err).Error("hanko api call failed")
+		return err
+	}
+
+	if responseType != nil {
+		err = c.decodeHttpResponse(httpResponse, responseType, ctxLogger)
+		if err != nil {
+			ctxLogger.WithError(err).Error("failed to decode the hanko api response")
+			return err
+		}
+	}
+
+	ctxLogger.Info("hanko api call succeeded")
+	return nil
 }

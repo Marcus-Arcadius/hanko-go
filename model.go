@@ -1,93 +1,132 @@
 package hankoApiClient
 
-type Operation string
-
-const (
-	AUTH  Operation = "AUTH"
-	REG   Operation = "REG"
-	DEREG Operation = "DEREG"
+import (
+	"gitlab.com/hanko/webauthn/protocol"
+	"time"
 )
 
-type ClientData struct {
-	RemoteAddress string `json:"remoteAddress"`
-	UserAgent     string `json:"userAgent"`
+// Misc
+
+type OperationStatus string
+
+type Error struct {
+	Message string `json:"message"`
+	Code    uint   `json:"code"`
 }
 
-type AuthenticatorSelectionCriteria struct {
-	UserVerification        string `json:"userVerification"`
-	AuthenticatorAttachment string `json:"authenticatorAttachment"`
+const (
+	Ok     OperationStatus = "ok"
+	Failed                 = "failed"
+)
+
+type User struct {
+	ID          string `json:"id"`
+	Name        string `json:"name"`
+	DisplayName string `json:"displayName"`
+	IconUrl     string `json:"icon"`
 }
 
-type Request struct {
-	Operation                      Operation                       `json:"operation"`
-	Username                       string                          `json:"username"`
-	UserId                         string                          `json:"userId"`
-	ClientData                     *ClientData                     `json:"clientData"`
-	Transaction                    *string                         `json:"transaction,omitempty"`
-	DeviceIds                      *[]string                       `json:"deviceIds"`
-	AuthenticatorSelectionCriteria *AuthenticatorSelectionCriteria `json:"authenticatorSelectionCriteria"`
-	IsSecondFactorOnly             *bool                           `json:"isSecondFactorOnly,omitempty"`
+// WebAuthn Registration - Initialization
+
+type WebAuthnRegistrationInitializationRequest struct {
+	User    User                                             `json:"user"`
+	Options WebAuthnRegistrationInitializationRequestOptions `json:"options"`
 }
 
-type RelyingParty struct {
-	AppId                       string `json:"appId"`
-	AuthenticationTimeoutSecond int    `json:"authenticationTimeoutSeconds"`
-	BasicIntegrity              bool   `json:"basicIntegrity"`
-	CtsProfileMatch             bool   `json:"ctsProfileMatch"`
-	Icon                        string `json:"icon"`
-	Id                          string `json:"id"`
-	Jailbreak                   bool   `json:"jailbreak"`
-	Name                        string `json:"name"`
-	RegistrationTimeoutSeconds  int    `json:"registrationTimeoutSeconds"`
-	ShowLocation                bool   `json:"showLocation"`
+type WebAuthnRegistrationInitializationRequestOptions struct {
+	AuthenticatorSelection protocol.AuthenticatorSelection `json:"authenticatorSelection"`
+	ConveyancePreference   protocol.ConveyancePreference   `json:"conveyancePreference"`
 }
 
-type Link struct {
-	Href   string `json:"href"`
-	Method string `json:"method"`
-	Rel    string `json:"rel"`
+type WebAuthnRegistrationInitializationResponse struct {
+	protocol.PublicKeyCredentialCreationOptions
 }
 
-type Device struct {
-	KeyName *string `json:"keyName,omitempty"`
+// WebAuthn Registration - Finalization
+
+type WebAuthnRegistrationFinalizationRequest struct {
+	protocol.CredentialCreationResponse
 }
 
-type Response struct {
-	Id           string       `json:"id"`
-	Operation    Operation    `json:"operation"`
-	Username     string       `json:"username"`
-	UserId       string       `json:"userId"`
-	Status       string       `json:"status"`
-	CreatedAt    string       `json:"createdAt"`
-	ValidUntil   string       `json:"validUntil"`
-	RelyingParty RelyingParty `json:"relyingParty"`
-	Request      string       `json:"request"`
-	DeviceId     string       `json:"deviceId"`
-	Links        []Link       `json:"links"`
-	Transaction  *string      `json:"transaction,omitempty"`
-	Device       *Device      `json:"device,omitempty"`
+type WebAuthnRegistrationFinalizationResponse struct {
+	Status     OperationStatus     `json:"status"`
+	User       User                `json:"user"`
+	Credential *WebauthnCredential `json:"credential"`
+	Error      *Error              `json:"error,omitempty"`
 }
 
-type AuthenticatorResponse struct {
-	AttestationObject string `json:"attestationObject,omitempty"`
-	ClientDataJson    string `json:"clientDataJSON"`
-	AuthenticatorData string `json:"authenticatorData,omitempty"`
-	Signature         string `json:"signature,omitempty"`
-	UserHandle        string `json:"userHandle,omitempty"`
+type WebauthnAuthenticator struct {
+	Aaguid     string `json:"aaguid,omitempty"`
+	Name       string `json:"name,omitempty"`
+	Attachment string `json:"attachment,omitempty"`
 }
 
-type PublicKeyCredential struct {
-	Id       string                `json:"id"`
-	RawId    string                `json:"rawId"`
-	Type     string                `json:"type"`
-	Response AuthenticatorResponse `json:"response"`
+// WebAuthn Authentication - Initialization
+
+type WebAuthnAuthenticationInitializationRequestOptions struct {
+	UserVerification        protocol.UserVerificationRequirement `json:"userVerification"`
+	AuthenticatorAttachment protocol.AuthenticatorAttachment     `json:"authenticatorAttachment"`
 }
 
-type DeviceKeyInfo struct {
-	KeyName string `json:"keyName"`
+type WebAuthnAuthenticationInitializationRequest struct {
+	User    User                                               `json:"user"`
+	Options WebAuthnAuthenticationInitializationRequestOptions `json:"options"`
 }
 
-type HankoCredentialRequest struct {
-	WebAuthnResponse PublicKeyCredential `json:"webAuthnResponse"`
-	DeviceKeyInfo    DeviceKeyInfo       `json:"deviceKeyInfo"`
+type WebAuthnAuthenticationInitializationResponse struct {
+	protocol.PublicKeyCredentialRequestOptions
+}
+
+// WebAuthn Authentication - Finalization
+type WebAuthnAuthenticationFinalizationRequest struct {
+	protocol.CredentialAssertionResponse
+}
+
+type WebAuthnAuthenticationFinalizationResponse struct {
+	Status OperationStatus `json:"status"`
+	User   User            `json:"user"`
+	Error  *Error          `json:"error,omitempty"`
+}
+
+// WebAuthn Transactions - Initialization
+
+type WebAuthnTransactionInitializationRequest struct {
+	WebAuthnAuthenticationInitializationRequest
+	Transaction string `json:"transaction"`
+}
+
+type WebAuthnTransactionInitializationResponse struct {
+	WebAuthnAuthenticationInitializationResponse
+}
+
+// WebAuthn Transactions - Finalization
+
+type WebAuthnTransactionFinalizationRequest struct {
+	WebAuthnAuthenticationFinalizationRequest
+}
+
+type WebAuthnTransactionFinalizationResponse struct {
+	WebAuthnAuthenticationFinalizationResponse
+}
+
+// WebAuthn Credentials
+
+type WebAuthnCredentialQuery struct {
+	UserId   string `json:"user_id" url:"user_id"`
+	PageSize uint   `json:"page_size" url:"page_size"`
+	Page     uint   `json:"page" url:"page"`
+}
+
+type WebauthnCredential struct {
+	Id               string                 `json:"id"`
+	CreatedAt        time.Time              `json:"createdAt"`
+	LastUsed         time.Time              `json:"lastUsed"`
+	Name             string                 `json:"name"`
+	UserVerification bool                   `json:"userVerification"`
+	IsResidentKey    bool                   `json:"isResidentKey"`
+	Authenticator    *WebauthnAuthenticator `json:"authenticator,omitempty"`
+}
+
+type WebAuthnCredentialUpdateRequest struct {
+	Name string `json:"name"`
 }
