@@ -10,9 +10,9 @@ type User struct {
 }
 
 type ApiError struct {
-	Message      string `json:"message,omitempty"`
-	Details      string `json:"details,omitempty"`
-	DebugMessage string `json:"debug_message,omitempty"`
+	Message      string `json:"message"`
+	Details      string `json:"details"`
+	DebugMessage string `json:"debug_message"`
 	StatusText   string `json:"status_text"`
 	StatusCode   int    `json:"status_code"`
 }
