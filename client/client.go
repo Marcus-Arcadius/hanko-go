@@ -193,10 +193,13 @@ func (c *Client) Request(action string, method string, requestUrl string, reques
 	httpResponse, err := c.HttpClientDo(httpRequest)
 	if err != nil {
 		if httpResponse != nil {
-			apiErr := &Error{}
+			apiErr := &ApiError{}
 			decErr := c.decodeHttpResponse(httpResponse, apiErr, ctxLogger)
 			if decErr == nil {
-				ctxLogger.WithError(err).Error(apiErr.Message)
+				ctxLogger.WithError(err).WithFields(log.Fields{
+					"debug_message": apiErr.DebugMessage,
+					"details":       apiErr.Details,
+				}).Error(apiErr.Message)
 				return errors.Wrap(err, apiErr.Message)
 			}
 		}
