@@ -1,4 +1,4 @@
-package hankoApiClient
+package client
 
 import (
 	"bytes"
@@ -14,66 +14,66 @@ import (
 	"strings"
 )
 
-// HankoApiClient Provides Methods for interacting with the Hanko API
-type HankoApiClient struct {
-	baseUrl      string
-	apiVersion   string
+// Client Provides Methods for interacting with the Hanko API
+type Client struct {
+	BaseUrl      string
+	ApiVersion   string
 	secret       string
 	hmacApiKeyId string
 	httpClient   *http.Client
 	log          *log.Logger
 }
 
-type Option func(client *HankoApiClient) *HankoApiClient
+type Option func(client *Client) *Client
 
 func WithHmac(hmacApiKeyId string) Option {
-	return func(client *HankoApiClient) *HankoApiClient {
+	return func(client *Client) *Client {
 		client.hmacApiKeyId = hmacApiKeyId
 		return client
 	}
 }
 
 func WithHttpClient(httpClient *http.Client) Option {
-	return func(client *HankoApiClient) *HankoApiClient {
+	return func(client *Client) *Client {
 		client.httpClient = httpClient
 		return client
 	}
 }
 
 func WithLogger(logger *log.Logger) Option {
-	return func(client *HankoApiClient) *HankoApiClient {
+	return func(client *Client) *Client {
 		client.log = logger
 		return client
 	}
 }
 
 func WithoutLogs() Option {
-	return func(client *HankoApiClient) *HankoApiClient {
+	return func(client *Client) *Client {
 		client.log.Out = ioutil.Discard
 		return client
 	}
 }
 
 func WithLogLevel(level log.Level) Option {
-	return func(client *HankoApiClient) *HankoApiClient {
+	return func(client *Client) *Client {
 		client.log.SetLevel(level)
 		return client
 	}
 }
 
 func WithLogFormatter(formatter log.Formatter) Option {
-	return func(client *HankoApiClient) *HankoApiClient {
+	return func(client *Client) *Client {
 		client.log.SetFormatter(formatter)
 		return client
 	}
 }
 
-// Returns a HankoApiClient give it the base url e.g. https://api.hanko.io and your API Secret
-func NewHankoApiClient(baseUrl string, secret string, opts ...Option) (client *HankoApiClient) {
-	client = &HankoApiClient{
-		baseUrl:    baseUrl,
+// Returns a Client give it the base url e.g. https://api.hanko.io and your API Secret
+func NewClient(baseUrl string, secret string, opts ...Option) (client *Client) {
+	client = &Client{
+		BaseUrl:    baseUrl,
 		secret:     secret,
-		apiVersion: "v1",
+		ApiVersion: "v1",
 		log:        log.New(),
 		httpClient: &http.Client{},
 	}
@@ -89,12 +89,12 @@ func NewHankoApiClient(baseUrl string, secret string, opts ...Option) (client *H
 			"please provide a valid api key id using the WithHmac() option.")
 	}
 
-	client.log.Debugf("Hanko client created (base url: %s)", client.baseUrl)
+	client.log.Debugf("Hanko client created (base url: %s)", client.BaseUrl)
 
 	return client
 }
 
-func (c *HankoApiClient) NewHttpRequest(method string, requestUrl string, requestBody interface{}) (httpRequest *http.Request, err error) {
+func (c *Client) NewHttpRequest(method string, requestUrl string, requestBody interface{}) (httpRequest *http.Request, err error) {
 	parsedRequestUrl, err := url.Parse(requestUrl)
 	if err != nil {
 		return nil, errors.Errorf("failed to parse url: '%s'", requestUrl)
@@ -120,7 +120,7 @@ func (c *HankoApiClient) NewHttpRequest(method string, requestUrl string, reques
 	return httpRequest, nil
 }
 
-func (c *HankoApiClient) Do(httpRequest *http.Request) (httpResponse *http.Response, err error) {
+func (c *Client) HttpClientDo(httpRequest *http.Request) (httpResponse *http.Response, err error) {
 	httpResponse, err = c.httpClient.Do(httpRequest)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not do request")
@@ -133,7 +133,7 @@ func (c *HankoApiClient) Do(httpRequest *http.Request) (httpResponse *http.Respo
 	return httpResponse, nil
 }
 
-func (c *HankoApiClient) getAuthorizationHeader(method string, url *url.URL, body *bytes.Buffer) (authHeader string) {
+func (c *Client) getAuthorizationHeader(method string, url *url.URL, body *bytes.Buffer) (authHeader string) {
 	if c.hmacApiKeyId != "" {
 		hmac := &HmacMessageData{
 			apiSecret:     c.secret,
@@ -149,7 +149,7 @@ func (c *HankoApiClient) getAuthorizationHeader(method string, url *url.URL, bod
 	return authHeader
 }
 
-func (c *HankoApiClient) decodeHttpResponse(httpResponse *http.Response, responseType interface{}, ctxLogger *log.Entry) (err error) {
+func (c *Client) decodeHttpResponse(httpResponse *http.Response, responseType interface{}, ctxLogger *log.Entry) (err error) {
 	responseTypeName := reflect.TypeOf(responseType).String()
 	body, err := ioutil.ReadAll(httpResponse.Body)
 	if err != nil {
@@ -168,21 +168,21 @@ func (c *HankoApiClient) decodeHttpResponse(httpResponse *http.Response, respons
 	return nil
 }
 
-func (c *HankoApiClient) run(action string, method string, requestUrl string, requestBody interface{}, responseType interface{}) error {
+func (c *Client) Request(action string, method string, requestUrl string, requestBody interface{}, responseType interface{}) error {
 	ctxLogger := c.log.WithFields(log.Fields{
 		"action": action,
 		"method": method,
 		"url":    requestUrl,
 	})
 
+	ctxLogger.Debug("new http request")
+
 	if requestBody != nil {
-		ctxLogger = ctxLogger.WithFields(log.Fields{
+		ctxLogger.WithFields(log.Fields{
 			"request_type": reflect.TypeOf(requestBody).String(),
 			"request":      fmt.Sprintf("%+v", requestBody),
-		})
+		}).Debug("got request body")
 	}
-
-	ctxLogger.Debug("new http request")
 
 	httpRequest, err := c.NewHttpRequest(method, requestUrl, requestBody)
 	if err != nil {
@@ -190,13 +190,17 @@ func (c *HankoApiClient) run(action string, method string, requestUrl string, re
 		return err
 	}
 
-	httpResponse, err := c.Do(httpRequest)
+	httpResponse, err := c.HttpClientDo(httpRequest)
 	if err != nil {
 		if httpResponse != nil {
-			apiErr := &Error{}
-			if decErr := c.decodeHttpResponse(httpResponse, apiErr, ctxLogger); decErr == nil {
-				ctxLogger.WithError(err).Error(apiErr.Message)
-				return errors.New(apiErr.Message)
+			apiErr := &ApiError{}
+			decErr := c.decodeHttpResponse(httpResponse, apiErr, ctxLogger)
+			if decErr == nil {
+				ctxLogger.WithError(err).WithFields(log.Fields{
+					"debug_message": apiErr.DebugMessage,
+					"details":       apiErr.Details,
+				}).Error(apiErr.Message)
+				return errors.Wrap(err, apiErr.Message)
 			}
 		}
 		ctxLogger.WithError(err).Error("hanko api call failed")

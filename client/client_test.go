@@ -1,4 +1,4 @@
-package hankoApiClient
+package client
 
 import (
 	"fmt"
@@ -8,7 +8,7 @@ import (
 )
 
 func TestHankoApiClient_NewHttpRequestWithHmac(t *testing.T) {
-	client := NewHankoApiClient(testBaseUrl, testApiSecret, WithHmac(testHmacApiKeyId), WithoutLogs())
+	client := NewClient(TestBaseUrl, TestApiSecret, WithHmac(TestHmacApiKeyId), WithoutLogs())
 	requestBody := &struct{ foo string }{"bar"}
 	request, err := client.NewHttpRequest(http.MethodPost, "/test", &requestBody)
 	if err != nil {
@@ -23,7 +23,7 @@ func TestHankoApiClient_NewHttpRequestWithHmac(t *testing.T) {
 }
 
 func TestHankoApiClient_NewHttpRequestWithoutHmac(t *testing.T) {
-	client := NewHankoApiClient(testBaseUrl, testApiSecret, WithoutLogs())
+	client := NewClient(TestBaseUrl, TestApiSecret, WithoutLogs())
 	requestBody := &struct{ foo string }{"bar"}
 	request, err := client.NewHttpRequest(http.MethodPost, "/test", requestBody)
 	if err != nil {
@@ -31,37 +31,37 @@ func TestHankoApiClient_NewHttpRequestWithoutHmac(t *testing.T) {
 		t.Fail()
 	}
 	authorizationHeader := request.Header.Get("Authorization")
-	if authorizationHeader != fmt.Sprintf("secret %s", testApiSecret) {
+	if authorizationHeader != fmt.Sprintf("secret %s", TestApiSecret) {
 		t.Errorf("wrong authorization header, got: %s", authorizationHeader)
 		t.Fail()
 	}
 }
 
 func TestHankoApiClient_Do(t *testing.T) {
-	client := NewHankoApiClient(testBaseUrl, testApiSecret, WithoutLogs())
-	httpRequest, err := http.NewRequest(http.MethodPost, testBaseUrl, nil)
+	client := NewClient(TestBaseUrl, TestApiSecret, WithoutLogs())
+	httpRequest, err := http.NewRequest(http.MethodPost, TestBaseUrl, nil)
 
-	ts := runTestApi(nil, nil, http.StatusOK)
+	ts := RunTestApi(nil, nil, http.StatusOK)
 	ts.Start()
-	_, err = client.Do(httpRequest)
+	_, err = client.HttpClientDo(httpRequest)
 	if err != nil {
 		t.Error("no error expected")
 		t.Fail()
 	}
 	ts.Close()
 
-	ts = runTestApi(nil, nil, http.StatusCreated)
+	ts = RunTestApi(nil, nil, http.StatusCreated)
 	ts.Start()
-	_, err = client.Do(httpRequest)
+	_, err = client.HttpClientDo(httpRequest)
 	if err != nil {
 		t.Error("no error expected")
 		t.Fail()
 	}
 	ts.Close()
 
-	ts = runTestApi(nil, nil, http.StatusBadRequest)
+	ts = RunTestApi(nil, nil, http.StatusBadRequest)
 	ts.Start()
-	_, err = client.Do(httpRequest)
+	_, err = client.HttpClientDo(httpRequest)
 	if err == nil {
 		t.Error("error expected")
 		t.Fail()

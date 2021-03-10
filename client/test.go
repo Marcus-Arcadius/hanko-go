@@ -1,4 +1,4 @@
-package hankoApiClient
+package client
 
 import (
 	"encoding/json"
@@ -7,12 +7,12 @@ import (
 	"net/http/httptest"
 )
 
-var testPort = ":9496"
-var testBaseUrl = "http://" + testPort
-var testApiSecret = "test"
-var testHmacApiKeyId = "test"
+var TestPort = ":9496"
+var TestBaseUrl = "http://" + TestPort
+var TestApiSecret = "test"
+var TestHmacApiKeyId = "test"
 
-func runTestApi(requestType interface{}, response interface{}, responseStatus int) *httptest.Server {
+func RunTestApi(requestType interface{}, response interface{}, responseStatus int) *httptest.Server {
 	ts := httptest.NewUnstartedServer(
 		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
@@ -37,7 +37,7 @@ func runTestApi(requestType interface{}, response interface{}, responseStatus in
 		}),
 	)
 
-	l, _ := net.Listen("tcp", testPort)
+	l, _ := net.Listen("tcp", TestPort)
 	ts.Listener = l
 
 	return ts
