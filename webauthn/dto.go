@@ -29,10 +29,8 @@ type RegistrationFinalizationRequest struct {
 }
 
 type RegistrationFinalizationResponse struct {
-	Status     hankoClient.OperationStatus `json:"status"`
-	User       hankoClient.User            `json:"user"`
-	Credential *Credential                 `json:"credential"`
-	Error      *hankoClient.ApiError       `json:"error,omitempty"`
+	User       hankoClient.User `json:"user"`
+	Credential *Credential      `json:"credential"`
 }
 
 type Authenticator struct {
@@ -63,9 +61,7 @@ type AuthenticationFinalizationRequest struct {
 }
 
 type AuthenticationFinalizationResponse struct {
-	Status hankoClient.OperationStatus `json:"status"`
-	User   hankoClient.User            `json:"user"`
-	Error  *hankoClient.ApiError       `json:"error,omitempty"`
+	User hankoClient.User `json:"user"`
 }
 
 //  Transactions - Initialization
