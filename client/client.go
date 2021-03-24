@@ -168,7 +168,7 @@ func (c *Client) decodeHttpResponse(httpResponse *http.Response, responseType in
 	return nil
 }
 
-func (c *Client) Request(action string, method string, requestUrl string, requestBody interface{}, responseType interface{}) error {
+func (c *Client) Request(action string, method string, requestUrl string, requestBody interface{}, responseType interface{}) *ApiError {
 	ctxLogger := c.log.WithFields(log.Fields{
 		"action": action,
 		"method": method,
@@ -187,7 +187,7 @@ func (c *Client) Request(action string, method string, requestUrl string, reques
 	httpRequest, err := c.NewHttpRequest(method, requestUrl, requestBody)
 	if err != nil {
 		ctxLogger.WithError(err).Error("failed to create http request")
-		return err
+		return WrapError(err)
 	}
 
 	httpResponse, err := c.HttpClientDo(httpRequest)
@@ -200,18 +200,18 @@ func (c *Client) Request(action string, method string, requestUrl string, reques
 					"debug_message": apiErr.DebugMessage,
 					"details":       apiErr.Details,
 				}).Error(apiErr.Message)
-				return errors.Wrap(err, apiErr.Message)
+				return apiErr
 			}
 		}
 		ctxLogger.WithError(err).Error("hanko api call failed")
-		return err
+		return WrapError(err)
 	}
 
 	if responseType != nil {
 		err = c.decodeHttpResponse(httpResponse, responseType, ctxLogger)
 		if err != nil {
 			ctxLogger.WithError(err).Error("failed to decode the hanko api response")
-			return err
+			return WrapError(err)
 		}
 	}
 
