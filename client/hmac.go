@@ -20,7 +20,7 @@ type HmacMessageData struct {
 }
 
 type HmacJson struct {
-	ApiKeyId	string `json:"hmacApiKeyId"`
+	ApiKeyId	string `json:"apiKeyId"`
 	Time		string `json:"time"`
 	Nonce		string `json:"nonce"`
 	Signature	string `json:"signature"`
@@ -52,7 +52,6 @@ func CalculateHmac(messageData *HmacMessageData) string {
 		Nonce:     nonce,
 		Signature: signatureHex,
 	}
-
 	jsonRepresentation, _ := json.Marshal(hmacJson)
 	return base64.RawStdEncoding.EncodeToString(jsonRepresentation)
 }
