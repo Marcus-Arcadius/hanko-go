@@ -15,3 +15,10 @@ type ApiError struct {
 	StatusCode   int    `json:"status_code"`
 }
 
+func (e *ApiError) Error() string {
+	return e.Message
+}
+
+func WrapError(err error) *ApiError {
+	return &ApiError{Message: err.Error()}
+}
