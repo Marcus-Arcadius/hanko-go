@@ -1,5 +1,9 @@
 package client
 
+import (
+	"fmt"
+)
+
 type User struct {
 	ID          string `json:"id"`
 	Name        string `json:"name"`
@@ -16,9 +20,22 @@ type ApiError struct {
 }
 
 func (e *ApiError) Error() string {
-	return e.Message
+	str := e.Message
+	if e.Details != "" {
+		str = fmt.Sprintf("%s: %s", str, e.Details)
+	}
+	if e.DebugMessage != "" {
+		str = fmt.Sprintf("%s: %s", str, e.DebugMessage)
+	}
+	return str
 }
 
 func WrapError(err error) *ApiError {
-	return &ApiError{Message: err.Error()}
+	return &ApiError{
+		Message:      "sdk error",
+		Details:      "an error occurred while processing the request",
+		DebugMessage: err.Error(),
+		StatusText:   "Internal Server Error",
+		StatusCode:   500,
+	}
 }
