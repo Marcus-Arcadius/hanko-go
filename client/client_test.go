@@ -3,7 +3,7 @@ package client
 import (
 	"fmt"
 	"net/http"
-	"strings"
+	"regexp"
 	"testing"
 )
 
@@ -15,8 +15,12 @@ func TestHankoApiClient_NewHttpRequestWithHmac(t *testing.T) {
 		t.Error(err)
 		t.Fail()
 	}
+
+	// the authorization header must contain the word "hanko" followed by space followed by a base64 encoded string.
+	// the string must be at least 240 chars long to pass the test
 	authorizationHeader := request.Header.Get("Authorization")
-	if !strings.HasPrefix(authorizationHeader, "hanko eyJobWFjQXBpS2V5SWQ") {
+	matched, _ := regexp.MatchString(`^hanko [A-Za-z0-9+/]{240,}`, authorizationHeader)
+	if !matched {
 		t.Errorf("wrong authorization header, got: %s", authorizationHeader)
 		t.Fail()
 	}
