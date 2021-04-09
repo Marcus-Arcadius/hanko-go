@@ -14,8 +14,8 @@ type RegistrationInitializationRequest struct {
 }
 
 type RegistrationInitializationRequestOptions struct {
-	AuthenticatorSelection protocol.AuthenticatorSelection `json:"authenticatorSelection"`
-	ConveyancePreference   protocol.ConveyancePreference   `json:"attestation"`
+	AuthenticatorSelection AuthenticatorSelection `json:"authenticatorSelection"`
+	ConveyancePreference   ConveyancePreference   `json:"attestation"`
 }
 
 type RegistrationInitializationResponse struct {
@@ -42,8 +42,8 @@ type Authenticator struct {
 //  Authentication - Initialization
 
 type AuthenticationInitializationRequestOptions struct {
-	UserVerification        protocol.UserVerificationRequirement `json:"userVerification"`
-	AuthenticatorAttachment protocol.AuthenticatorAttachment     `json:"authenticatorAttachment"`
+	UserVerification        UserVerificationRequirement `json:"userVerification"`
+	AuthenticatorAttachment AuthenticatorAttachment     `json:"authenticatorAttachment"`
 }
 
 type AuthenticationInitializationRequest struct {
@@ -106,3 +106,36 @@ type Credential struct {
 type CredentialUpdateRequest struct {
 	Name string `json:"name"`
 }
+
+// General
+
+type AuthenticatorSelection struct {
+	AuthenticatorAttachment AuthenticatorAttachment `json:"authenticatorAttachment,omitempty"`
+	RequireResidentKey *bool `json:"requireResidentKey,omitempty"`
+	UserVerification UserVerificationRequirement `json:"userVerification,omitempty"`
+}
+
+type AuthenticatorAttachment string
+
+const (
+	Platform AuthenticatorAttachment = "platform"
+	CrossPlatform AuthenticatorAttachment = "cross-platform"
+)
+
+type UserVerificationRequirement string
+
+const (
+	VerificationRequired UserVerificationRequirement = "required"
+	VerificationPreferred UserVerificationRequirement = "preferred"
+	VerificationDiscouraged UserVerificationRequirement = "discouraged"
+)
+
+
+type ConveyancePreference string
+
+const (
+	PreferNoAttestation ConveyancePreference = "none"
+	PreferIndirectAttestation ConveyancePreference = "indirect"
+	PreferDirectAttestation ConveyancePreference = "direct"
+)
+
