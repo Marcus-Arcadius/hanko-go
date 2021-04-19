@@ -20,13 +20,18 @@ type ApiError struct {
 }
 
 func (e *ApiError) Error() string {
-	str := e.Message
+	str := fmt.Sprintf("%d - %s", e.StatusCode, e.StatusText)
+
+	if e.Message != "" {
+		str = fmt.Sprintf("%s: %s", str, e.Message)
+	}
 	if e.Details != "" {
 		str = fmt.Sprintf("%s: %s", str, e.Details)
 	}
 	if e.DebugMessage != "" {
 		str = fmt.Sprintf("%s: %s", str, e.DebugMessage)
 	}
+
 	return str
 }
 
