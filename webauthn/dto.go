@@ -19,7 +19,7 @@ type RegistrationInitializationRequestOptions struct {
 }
 
 type RegistrationInitializationResponse struct {
-	protocol.PublicKeyCredentialCreationOptions
+	protocol.CredentialCreation
 }
 
 //  Registration - Finalization
@@ -52,7 +52,7 @@ type AuthenticationInitializationRequest struct {
 }
 
 type AuthenticationInitializationResponse struct {
-	protocol.PublicKeyCredentialRequestOptions
+	protocol.CredentialAssertion
 }
 
 //  Authentication - Finalization
