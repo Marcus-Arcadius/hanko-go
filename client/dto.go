@@ -4,21 +4,30 @@ import (
 	"fmt"
 )
 
+// User is the base representation of a user on whose behalf registration and authentication are performed with the
+// Hanko Authentication API.
 type User struct {
-	ID          string `json:"id"`
-	Name        string `json:"name"`
+	ID          string `json:"id"`   // unique user id
+	Name        string `json:"name"` // unique user name, related to the ID
 	DisplayName string `json:"displayName"`
 	IconUrl     string `json:"icon"`
 }
 
+// ApiError is the representation for all errors returned before, during, or after making requests to the Hanko
+// Authentication API.
+//
+// The API will always provide values for StatusCode and StatusCode. A DebugMessage is
+// available on requests resulting in a Bad Request (status 401). A fully populated ApiError will only be
+// returned when the API is running in development mode.
 type ApiError struct {
-	Message      string `json:"message"`
-	Details      string `json:"details"`
-	DebugMessage string `json:"debug_message"`
-	StatusText   string `json:"status_text"`
-	StatusCode   int    `json:"status_code"`
+	Message      string `json:"message"`       // contains a string which generally describes the error
+	Details      string `json:"details"`       // optionally contains a string which adds details to the Message
+	DebugMessage string `json:"debug_message"` // optionally contains a technical error message
+	StatusText   string `json:"status_text"`   // contains the http status code
+	StatusCode   int    `json:"status_code"`   // contains the http status text which corresponds to the StatusCode
 }
 
+// Error fulfills the go error interface and returns all error details available.
 func (e *ApiError) Error() string {
 	str := fmt.Sprintf("%d - %s", e.StatusCode, e.StatusText)
 
@@ -35,6 +44,8 @@ func (e *ApiError) Error() string {
 	return str
 }
 
+// WrapError wraps a given error and returns an ApiError. The resulting ApiError has an underlying Internal Server Error
+// (500) per default.
 func WrapError(err error) *ApiError {
 	return &ApiError{
 		Message:      "sdk error",
