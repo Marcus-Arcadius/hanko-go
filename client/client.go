@@ -1,4 +1,6 @@
-// Package client provides a base client for communication with the Hanko Authentication API.
+// Package client provides a base client for communication with the Hanko Authentication API. Please take a look at our
+// protocol-specific client SDKs:
+//	- WebAuthn: https://github.com/teamhanko/hanko-sdk-golang/webauthn
 package client
 
 import (
