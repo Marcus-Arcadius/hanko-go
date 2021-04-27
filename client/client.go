@@ -36,16 +36,7 @@ func NewClient(baseUrl string, secret string) *Client {
 		log:        log.New(),
 		httpClient: &http.Client{},
 	}
-
 	client.log.SetFormatter(&log.JSONFormatter{})
-
-	if client.hmacApiKeyId == "" {
-		client.log.Warn("hmac authentication is disabled. " +
-			"please provide a valid api key id using the WithHmac() option.")
-	}
-
-	client.log.Debugf("Hanko client created (base url: %s)", client.baseUrl)
-
 	return client
 }
 
