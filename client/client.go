@@ -14,6 +14,7 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
+	"time"
 )
 
 // Client is used to communicate with the Hanko Authentication API. It handles authentication, provides logging and
@@ -34,7 +35,7 @@ func NewClient(baseUrl string, secret string) *Client {
 		secret:     secret,
 		apiVersion: "v1",
 		log:        log.New(),
-		httpClient: &http.Client{},
+		httpClient: &http.Client{Timeout: time.Second * 10},
 	}
 	client.log.SetFormatter(&log.JSONFormatter{})
 	return client
