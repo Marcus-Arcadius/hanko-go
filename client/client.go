@@ -140,6 +140,7 @@ func (c *Client) getAuthorizationHeader(method string, url *url.URL, body *bytes
 // decodeHttpResponse decodes the httpResponse into the given responseType.
 func (c *Client) decodeHttpResponse(httpResponse *http.Response, responseType interface{}, ctxLogger *log.Entry) (err error) {
 	responseTypeName := reflect.TypeOf(responseType).String()
+	defer httpResponse.Body.Close()
 	body, err := ioutil.ReadAll(httpResponse.Body)
 	if err != nil {
 		return errors.Wrap(err, "failed to read http response body")
