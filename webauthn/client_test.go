@@ -12,7 +12,7 @@ func TestHankoApiClient_RegistrationInitialization(t *testing.T) {
 	ts := hankoClient.RunTestApi(requestBody, responseType, http.StatusOK)
 	ts.Start()
 	defer ts.Close()
-	client := NewClient(hankoClient.TestBaseUrl, hankoClient.TestApiSecret, hankoClient.WithoutLogs())
+	client := NewClient(hankoClient.TestBaseUrl, hankoClient.TestApiSecret).WithoutLogs()
 	_, err := client.InitializeRegistration(requestBody)
 	if err != nil {
 		t.Error(err)
@@ -26,7 +26,7 @@ func TestHankoApiClient_RegistrationFinalization(t *testing.T) {
 	ts := hankoClient.RunTestApi(requestBody, responseType, http.StatusOK)
 	ts.Start()
 	defer ts.Close()
-	client := NewClient(hankoClient.TestBaseUrl, hankoClient.TestApiSecret, hankoClient.WithoutLogs())
+	client := NewClient(hankoClient.TestBaseUrl, hankoClient.TestApiSecret).WithoutLogs()
 	_, err := client.FinalizeRegistration(requestBody)
 	if err != nil {
 		t.Error(err)
@@ -40,7 +40,7 @@ func TestHankoApiClient_AuthenticationInitialization(t *testing.T) {
 	ts := hankoClient.RunTestApi(requestBody, responseType, http.StatusOK)
 	ts.Start()
 	defer ts.Close()
-	client := NewClient(hankoClient.TestBaseUrl, hankoClient.TestApiSecret, hankoClient.WithoutLogs())
+	client := NewClient(hankoClient.TestBaseUrl, hankoClient.TestApiSecret).WithoutLogs()
 	_, err := client.InitializeAuthentication(requestBody)
 	if err != nil {
 		t.Error(err)
@@ -54,7 +54,7 @@ func TestHankoApiClient_AuthenticationFinalization(t *testing.T) {
 	ts := hankoClient.RunTestApi(requestBody, responseType, http.StatusOK)
 	ts.Start()
 	defer ts.Close()
-	client := NewClient(hankoClient.TestBaseUrl, hankoClient.TestApiSecret, hankoClient.WithoutLogs())
+	client := NewClient(hankoClient.TestBaseUrl, hankoClient.TestApiSecret).WithoutLogs()
 	_, err := client.FinalizeAuthentication(requestBody)
 	if err != nil {
 		t.Error(err)
@@ -68,7 +68,7 @@ func TestHankoApiClient_TransactionInitialization(t *testing.T) {
 	ts := hankoClient.RunTestApi(requestBody, responseType, http.StatusOK)
 	ts.Start()
 	defer ts.Close()
-	client := NewClient(hankoClient.TestBaseUrl, hankoClient.TestApiSecret, hankoClient.WithoutLogs())
+	client := NewClient(hankoClient.TestBaseUrl, hankoClient.TestApiSecret).WithoutLogs()
 	_, err := client.InitializeTransaction(requestBody)
 	if err != nil {
 		t.Error(err)
@@ -82,7 +82,7 @@ func TestHankoApiClient_TransactionFinalization(t *testing.T) {
 	ts := hankoClient.RunTestApi(requestBody, responseType, http.StatusOK)
 	ts.Start()
 	defer ts.Close()
-	client := NewClient(hankoClient.TestBaseUrl, hankoClient.TestApiSecret, hankoClient.WithoutLogs())
+	client := NewClient(hankoClient.TestBaseUrl, hankoClient.TestApiSecret).WithoutLogs()
 	_, err := client.FinalizeTransaction(requestBody)
 	if err != nil {
 		t.Error(err)
@@ -95,7 +95,7 @@ func TestHankoApiClient_ListCredentials(t *testing.T) {
 	ts := hankoClient.RunTestApi(nil, responseType, http.StatusOK)
 	ts.Start()
 	defer ts.Close()
-	client := NewClient(hankoClient.TestBaseUrl, hankoClient.TestApiSecret, hankoClient.WithoutLogs())
+	client := NewClient(hankoClient.TestBaseUrl, hankoClient.TestApiSecret).WithoutLogs()
 	_, err := client.ListCredentials(&CredentialQuery{UserId: "test", Page: 3})
 	if err != nil {
 		t.Error(err)
@@ -108,7 +108,7 @@ func TestHankoApiClient_GetCredential(t *testing.T) {
 	ts := hankoClient.RunTestApi(nil, responseType, http.StatusOK)
 	ts.Start()
 	defer ts.Close()
-	client := NewClient(hankoClient.TestBaseUrl, hankoClient.TestApiSecret, hankoClient.WithoutLogs())
+	client := NewClient(hankoClient.TestBaseUrl, hankoClient.TestApiSecret).WithoutLogs()
 	_, err := client.GetCredential("test")
 	if err != nil {
 		t.Error(err)
@@ -120,7 +120,7 @@ func TestHankoApiClient_DeleteCredential(t *testing.T) {
 	ts := hankoClient.RunTestApi(nil, nil, http.StatusOK)
 	ts.Start()
 	defer ts.Close()
-	client := NewClient(hankoClient.TestBaseUrl, hankoClient.TestApiSecret, hankoClient.WithoutLogs())
+	client := NewClient(hankoClient.TestBaseUrl, hankoClient.TestApiSecret).WithoutLogs()
 	err := client.DeleteCredential("test")
 	if err != nil {
 		t.Error(err)
@@ -134,7 +134,7 @@ func TestHankoApiClient_UpdateCredential(t *testing.T) {
 	ts := hankoClient.RunTestApi(requestBody, responseType, http.StatusOK)
 	ts.Start()
 	defer ts.Close()
-	client := NewClient(hankoClient.TestBaseUrl, hankoClient.TestApiSecret, hankoClient.WithoutLogs())
+	client := NewClient(hankoClient.TestBaseUrl, hankoClient.TestApiSecret).WithoutLogs()
 	_, err := client.UpdateCredential("test", requestBody)
 	if err != nil {
 		t.Error(err)

@@ -2,13 +2,21 @@ package client
 
 import (
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"regexp"
 	"testing"
 )
 
+func getTestClient() *Client {
+	client := NewClient(TestBaseUrl, TestApiSecret)
+	client.SetLogWriter(ioutil.Discard)
+	return client
+}
+
 func TestHankoApiClient_NewHttpRequestWithHmac(t *testing.T) {
-	client := NewClient(TestBaseUrl, TestApiSecret, WithHmac(TestHmacApiKeyId), WithoutLogs())
+	client := getTestClient()
+	client.SetHmac(TestHmacApiKeyId)
 	requestBody := &struct{ foo string }{"bar"}
 	request, err := client.NewHttpRequest(http.MethodPost, "/test", &requestBody)
 	if err != nil {
@@ -27,7 +35,7 @@ func TestHankoApiClient_NewHttpRequestWithHmac(t *testing.T) {
 }
 
 func TestHankoApiClient_NewHttpRequestWithoutHmac(t *testing.T) {
-	client := NewClient(TestBaseUrl, TestApiSecret, WithoutLogs())
+	client := getTestClient()
 	requestBody := &struct{ foo string }{"bar"}
 	request, err := client.NewHttpRequest(http.MethodPost, "/test", requestBody)
 	if err != nil {
@@ -42,7 +50,7 @@ func TestHankoApiClient_NewHttpRequestWithoutHmac(t *testing.T) {
 }
 
 func TestHankoApiClient_Do(t *testing.T) {
-	client := NewClient(TestBaseUrl, TestApiSecret, WithoutLogs())
+	client := getTestClient()
 	httpRequest, err := http.NewRequest(http.MethodPost, TestBaseUrl, nil)
 
 	ts := RunTestApi(nil, nil, http.StatusOK)

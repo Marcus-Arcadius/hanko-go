@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -14,84 +15,62 @@ import (
 	"strings"
 )
 
-// Client Provides Methods for interacting with the Hanko API
 type Client struct {
-	BaseUrl      string
-	ApiVersion   string
+	baseUrl      string
+	apiVersion   string
 	secret       string
 	hmacApiKeyId string
 	httpClient   *http.Client
 	log          *log.Logger
 }
 
-type Option func(client *Client) *Client
-
-func WithHmac(hmacApiKeyId string) Option {
-	return func(client *Client) *Client {
-		client.hmacApiKeyId = hmacApiKeyId
-		return client
-	}
-}
-
-func WithHttpClient(httpClient *http.Client) Option {
-	return func(client *Client) *Client {
-		client.httpClient = httpClient
-		return client
-	}
-}
-
-func WithLogger(logger *log.Logger) Option {
-	return func(client *Client) *Client {
-		client.log = logger
-		return client
-	}
-}
-
-func WithoutLogs() Option {
-	return func(client *Client) *Client {
-		client.log.Out = ioutil.Discard
-		return client
-	}
-}
-
-func WithLogLevel(level log.Level) Option {
-	return func(client *Client) *Client {
-		client.log.SetLevel(level)
-		return client
-	}
-}
-
-func WithLogFormatter(formatter log.Formatter) Option {
-	return func(client *Client) *Client {
-		client.log.SetFormatter(formatter)
-		return client
-	}
-}
-
-// Returns a Client give it the base url e.g. https://api.hanko.io and your API Secret
-func NewClient(baseUrl string, secret string, opts ...Option) (client *Client) {
-	client = &Client{
-		BaseUrl:    baseUrl,
+func NewClient(baseUrl string, secret string) *Client {
+	client := &Client{
+		baseUrl:    baseUrl,
 		secret:     secret,
-		ApiVersion: "v1",
+		apiVersion: "v1",
 		log:        log.New(),
 		httpClient: &http.Client{},
 	}
 
 	client.log.SetFormatter(&log.JSONFormatter{})
 
-	for _, opt := range opts {
-		client = opt(client)
-	}
-
 	if client.hmacApiKeyId == "" {
 		client.log.Warn("hmac authentication is disabled. " +
 			"please provide a valid api key id using the WithHmac() option.")
 	}
 
-	client.log.Debugf("Hanko client created (base url: %s)", client.BaseUrl)
+	client.log.Debugf("Hanko client created (base url: %s)", client.baseUrl)
 
 	return client
+}
+
+func (c *Client) GetUrl() string {
+	return fmt.Sprintf("%s/%s", c.baseUrl, c.apiVersion)
+}
+
+func (c *Client) SetHmac(hmacApiKeyId string) {
+	c.hmacApiKeyId = hmacApiKeyId
+}
+
+func (c *Client) SetHttpClient(httpClient *http.Client) {
+	c.httpClient = httpClient
+}
+
+func (c *Client) SetLogger(logger *log.Logger) {
+	c.log = logger
+}
+
+func (c *Client) SetLogWriter(out io.Writer) {
+	c.log.Out = out
+}
+
+func (c *Client) SetLogLevel(level log.Level) {
+	c.log.SetLevel(level)
+}
+
+func (c *Client) SetLogFormatter(formatter log.Formatter) {
+	c.log.SetFormatter(formatter)
 }
 
 func (c *Client) NewHttpRequest(method string, requestUrl string, requestBody interface{}) (httpRequest *http.Request, err error) {
