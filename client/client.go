@@ -43,7 +43,7 @@ func NewClient(baseUrl string, secret string) *Client {
 
 // GetUrl returns a concatenation of the API baseUrl and apiVersion.
 func (c *Client) GetUrl() string {
-	return fmt.Sprintf("%s/%s", c.baseUrl, c.apiVersion)
+	return fmt.Sprintf("%s/%s", strings.TrimSuffix(c.baseUrl, "/"), c.apiVersion)
 }
 
 // SetHmac sets the given hmacApiKeyId to be used while generating the authorization header.
