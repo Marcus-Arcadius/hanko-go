@@ -59,8 +59,7 @@ func (c *Client) InitializeRegistration(requestBody *RegistrationInitializationR
 
 // FinalizeRegistration finalizes the registration request initiated by the InitializeRegistration method. Provide a
 // RegistrationFinalizationRequest which represents the result of calling the browser's WebAuthn API's
-// navigator.credentials.create() function. Returns a RegistrationFinalizationResponse on successful credential
-// registration.
+// navigator.credentials.create() function.
 func (c *Client) FinalizeRegistration(requestBody *RegistrationFinalizationRequest) (response *RegistrationFinalizationResponse, err *hankoClient.ApiError) {
 	response = &RegistrationFinalizationResponse{}
 	requestUrl := c.getUrl(pathRegistrationFinalize)
