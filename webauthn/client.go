@@ -8,17 +8,17 @@ import (
 	"net/http"
 )
 
-type path string
+type urlPath string
 
 const (
-	pathWebauthnBase             path = "webauthn"
-	pathRegistrationInitialize   path = "registration/initialize"
-	pathRegistrationFinalize     path = "registration/finalize"
-	pathAuthenticationInitialize path = "authentication/initialize"
-	pathAuthenticationFinalize   path = "authentication/finalize"
-	pathTransactionInitialize    path = "transaction/initialize"
-	pathTransactionFinalize      path = "transaction/finalize"
-	pathCredentials              path = "credentials"
+	pathWebauthnBase             urlPath = "webauthn"
+	pathRegistrationInitialize   urlPath = "registration/initialize"
+	pathRegistrationFinalize     urlPath = "registration/finalize"
+	pathAuthenticationInitialize urlPath = "authentication/initialize"
+	pathAuthenticationFinalize   urlPath = "authentication/finalize"
+	pathTransactionInitialize    urlPath = "transaction/initialize"
+	pathTransactionFinalize      urlPath = "transaction/finalize"
+	pathCredentials              urlPath = "credentials"
 )
 
 // Client wraps a basic client.Client and provides methods for registration, authentication and webauthn
@@ -40,10 +40,10 @@ func NewClient(baseUrl string, secret string) *Client {
 	return &Client{client: hankoClient.NewClient(baseUrl, secret)}
 }
 
-// getUrl constructs an returns a full API WebAuthn request URL, e.g. "https://{baseUrl}/{apiVersion}/webauthn/{path}"
-// using a given endpoint path.
-func (c *Client) getUrl(path path) string {
-	return fmt.Sprintf("%s/%s/%s", c.client.GetUrl(), pathWebauthnBase, path)
+// getUrl constructs an returns a full API WebAuthn request URL, e.g. "https://{baseUrl}/{apiVersion}/webauthn/{urlPath}"
+// using a given urlPath.
+func (c *Client) getUrl(p urlPath) string {
+	return fmt.Sprintf("%s/%s/%s", c.client.GetUrl(), pathWebauthnBase, p)
 }
 
 // InitializeRegistration initializes the registration of a new credential using a RegistrationInitializationRequest.
