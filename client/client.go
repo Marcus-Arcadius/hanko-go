@@ -121,7 +121,7 @@ func (c *Client) HttpClientDo(httpRequest *http.Request) (httpResponse *http.Res
 
 // getAuthorizationHeader calculates an HMAC with the specified values for method, url and body. If the client has been
 // created without the client.WithHmac option, the api secret will be used for authentication. Returns the
-// an HTTP authorization header as a string.
+// HTTP authorization header as a string.
 func (c *Client) getAuthorizationHeader(method string, url *url.URL, body *bytes.Buffer) (authHeader string) {
 	if c.hmacApiKeyId != "" {
 		hmac := &HmacMessageData{
