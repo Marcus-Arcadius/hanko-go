@@ -23,8 +23,8 @@ type ApiError struct {
 	Message      string `json:"message"`       // contains a string which generally describes the error
 	Details      string `json:"details"`       // optionally contains a string which adds details to the Message
 	DebugMessage string `json:"debug_message"` // optionally contains a technical error message
-	StatusText   string `json:"status_text"`   // contains the http status code
-	StatusCode   int    `json:"status_code"`   // contains the http status text which corresponds to the StatusCode
+	StatusText   string `json:"status_text"`   // contains the http status text which corresponds to the StatusCode
+	StatusCode   int    `json:"status_code"`   // contains the http status code
 }
 
 // Error fulfills the go error interface and returns all error details available.
