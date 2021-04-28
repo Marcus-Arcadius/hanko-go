@@ -117,7 +117,7 @@ func (authenticatorSelection *AuthenticatorSelection) WithUserVerification(userV
 //
 // See also: https://www.w3.org/TR/webauthn/#sctn-credentialcreationoptions-extension
 type RegistrationInitializationResponse struct {
-	protocol.PublicKeyCredentialCreationOptions
+	protocol.CredentialCreation
 }
 
 // RegistrationFinalizationRequest contains the representation of a PublicKeyCredential obtained through credential
@@ -186,7 +186,7 @@ func (request *AuthenticationInitializationRequest) WithUserVerification(userVer
 //
 // See also: https://www.w3.org/TR/webauthn-2/#sctn-credentialrequestoptions-extension
 type AuthenticationInitializationResponse struct {
-	protocol.PublicKeyCredentialRequestOptions
+	protocol.CredentialAssertion
 }
 
 // AuthenticationFinalizationRequest contains the representation of a PublicKeyCredential obtained through assertion
