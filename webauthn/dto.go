@@ -29,11 +29,6 @@ func (user RegistrationInitializationUser) WithDisplayName(displayName string) R
 	return user
 }
 
-func (user RegistrationInitializationUser) WithIconUrl(iconUrl string) RegistrationInitializationUser {
-	user.IconUrl = iconUrl
-	return user
-}
-
 // AuthenticationInitializationUser is the user representation used for an authentication initialization.
 type AuthenticationInitializationUser struct {
 	hankoClient.User

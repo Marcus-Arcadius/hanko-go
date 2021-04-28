@@ -19,18 +19,15 @@ func TestWebauthn_NewRegistrationInitializationUser(t *testing.T) {
 				ID:          "id",
 				Name:        "name",
 				DisplayName: "name",
-				IconUrl:     "",
 			}},
 		},
 		{
 			name: "init object with options",
-			test: NewRegistrationInitializationUser("id", "name").WithDisplayName("display_name").
-				WithIconUrl("file://icon.png"),
+			test: NewRegistrationInitializationUser("id", "name").WithDisplayName("display_name"),
 			expected: RegistrationInitializationUser{User: client.User{
 				ID:          "id",
 				Name:        "name",
 				DisplayName: "display_name",
-				IconUrl:     "file://icon.png",
 			}},
 		},
 	}
@@ -57,7 +54,6 @@ func TestWebauthn_NewAuthenticationInitializationUser(t *testing.T) {
 				ID:          "id",
 				Name:        "",
 				DisplayName: "",
-				IconUrl:     "",
 			}},
 		},
 		{
@@ -67,7 +63,6 @@ func TestWebauthn_NewAuthenticationInitializationUser(t *testing.T) {
 				ID:          "id",
 				Name:        "name",
 				DisplayName: "",
-				IconUrl:     "",
 			}},
 		},
 	}
@@ -95,7 +90,6 @@ func TestWebauthn_NewRegistrationInitializationRequest(t *testing.T) {
 					ID:          "id",
 					Name:        "name",
 					DisplayName: "name",
-					IconUrl:     "",
 				},
 				Options: RegistrationInitializationRequestOptions{
 					AuthenticatorSelection: nil,
@@ -116,7 +110,6 @@ func TestWebauthn_NewRegistrationInitializationRequest(t *testing.T) {
 					ID:          "id",
 					Name:        "name",
 					DisplayName: "name",
-					IconUrl:     "",
 				},
 				Options: RegistrationInitializationRequestOptions{
 					AuthenticatorSelection: &AuthenticatorSelection{
@@ -189,7 +182,6 @@ func TestWebauthn_NewAuthenticationInitializationRequest(t *testing.T) {
 					ID:          "id",
 					Name:        "",
 					DisplayName: "",
-					IconUrl:     "",
 				},
 				Options: AuthenticationInitializationRequestOptions{
 					UserVerification:        "",
@@ -206,7 +198,6 @@ func TestWebauthn_NewAuthenticationInitializationRequest(t *testing.T) {
 					ID:          "id",
 					Name:        "",
 					DisplayName: "",
-					IconUrl:     "",
 				},
 				Options: AuthenticationInitializationRequestOptions{
 					UserVerification:        VerificationDiscouraged,
@@ -239,7 +230,6 @@ func TestWebauthn_NewTransactionInitializationRequest(t *testing.T) {
 					ID:          "id",
 					Name:        "",
 					DisplayName: "",
-					IconUrl:     "",
 				},
 				Options:     AuthenticationInitializationRequestOptions{},
 				Transaction: "",
@@ -255,7 +245,6 @@ func TestWebauthn_NewTransactionInitializationRequest(t *testing.T) {
 					ID:          "id",
 					Name:        "",
 					DisplayName: "",
-					IconUrl:     "",
 				},
 				Options: AuthenticationInitializationRequestOptions{
 					UserVerification:        VerificationDiscouraged,

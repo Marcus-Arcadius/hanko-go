@@ -10,7 +10,6 @@ type User struct {
 	ID          string `json:"id"`             // unique user id
 	Name        string `json:"name,omitempty"` // unique user name, related to the ID
 	DisplayName string `json:"displayName,omitempty"`
-	IconUrl     string `json:"icon,omitempty"`
 }
 
 // ApiError is the representation for all errors returned before, during, or after making requests to the Hanko
