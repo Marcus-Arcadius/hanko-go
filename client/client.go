@@ -1,3 +1,4 @@
+// Package client provides a base client for communication with the Hanko Authentication API.
 package client
 
 import (
@@ -6,94 +7,78 @@ import (
 	"fmt"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"reflect"
 	"strconv"
 	"strings"
+	"time"
 )
 
-// Client Provides Methods for interacting with the Hanko API
+// Client is used to communicate with the Hanko Authentication API. It handles authentication, provides logging and
+// functionality for decoding the responses.
 type Client struct {
-	BaseUrl      string
-	ApiVersion   string
-	secret       string
-	hmacApiKeyId string
-	httpClient   *http.Client
-	log          *log.Logger
+	baseUrl      string       // the url of the hanko server, e.g. https://api.hanko.io
+	apiVersion   string       // version string to be appended to baseUrl
+	secret       string       // required to access the hanko api
+	hmacApiKeyId string       // contains the api key id when HMAC is used
+	httpClient   *http.Client // for http communication with the hanko server
+	log          *log.Logger  // logrus logger
 }
 
-type Option func(client *Client) *Client
-
-func WithHmac(hmacApiKeyId string) Option {
-	return func(client *Client) *Client {
-		client.hmacApiKeyId = hmacApiKeyId
-		return client
-	}
-}
-
-func WithHttpClient(httpClient *http.Client) Option {
-	return func(client *Client) *Client {
-		client.httpClient = httpClient
-		return client
-	}
-}
-
-func WithLogger(logger *log.Logger) Option {
-	return func(client *Client) *Client {
-		client.log = logger
-		return client
-	}
-}
-
-func WithoutLogs() Option {
-	return func(client *Client) *Client {
-		client.log.Out = ioutil.Discard
-		return client
-	}
-}
-
-func WithLogLevel(level log.Level) Option {
-	return func(client *Client) *Client {
-		client.log.SetLevel(level)
-		return client
-	}
-}
-
-func WithLogFormatter(formatter log.Formatter) Option {
-	return func(client *Client) *Client {
-		client.log.SetFormatter(formatter)
-		return client
-	}
-}
-
-// Returns a Client give it the base url e.g. https://api.hanko.io and your API Secret
-func NewClient(baseUrl string, secret string, opts ...Option) (client *Client) {
-	client = &Client{
-		BaseUrl:    baseUrl,
+// NewClient returns a new basic hanko Client. pass in the base url (e.g. https://api.hanko.io) and your api secret.
+func NewClient(baseUrl string, secret string) *Client {
+	client := &Client{
+		baseUrl:    baseUrl,
 		secret:     secret,
-		ApiVersion: "v1",
+		apiVersion: "v1",
 		log:        log.New(),
-		httpClient: &http.Client{},
+		httpClient: &http.Client{Timeout: time.Second * 10},
 	}
-
 	client.log.SetFormatter(&log.JSONFormatter{})
-
-	for _, opt := range opts {
-		client = opt(client)
-	}
-
-	if client.hmacApiKeyId == "" {
-		client.log.Warn("hmac authentication is disabled. " +
-			"please provide a valid api key id using the WithHmac() option.")
-	}
-
-	client.log.Debugf("Hanko client created (base url: %s)", client.BaseUrl)
-
 	return client
 }
 
+// GetUrl returns a concatenation of the API baseUrl and apiVersion.
+func (c *Client) GetUrl() string {
+	return fmt.Sprintf("%s/%s", strings.TrimSuffix(c.baseUrl, "/"), c.apiVersion)
+}
+
+// SetHmac sets the given hmacApiKeyId to be used while generating the authorization header.
+func (c *Client) SetHmac(hmacApiKeyId string) {
+	c.hmacApiKeyId = hmacApiKeyId
+}
+
+// SetHttpClient sets a different http.Client. To example if you want to use an http proxy you can pass your own
+// configured http.Client.
+func (c *Client) SetHttpClient(httpClient *http.Client) {
+	c.httpClient = httpClient
+}
+
+// SetLogger allows you to set a custom logrus.Logger.
+func (c *Client) SetLogger(logger *log.Logger) {
+	c.log = logger
+}
+
+// SetLogWriter allows you to change the log output to the given io.Writer.
+func (c *Client) SetLogWriter(out io.Writer) {
+	c.log.Out = out
+}
+
+// SetLogLevel allows you to change the log level. The default is logrus.InfoLevel.
+func (c *Client) SetLogLevel(level log.Level) {
+	c.log.SetLevel(level)
+}
+
+// SetLogFormatter allows you to set a custom log formatter. The default is logrus.JSONFormatter.
+func (c *Client) SetLogFormatter(formatter log.Formatter) {
+	c.log.SetFormatter(formatter)
+}
+
+// NewHttpRequest encodes the given requestBody, creates a new HTTP request using the http.NewRequest method and
+// sets the authorization and content-type headers.
 func (c *Client) NewHttpRequest(method string, requestUrl string, requestBody interface{}) (httpRequest *http.Request, err error) {
 	parsedRequestUrl, err := url.Parse(requestUrl)
 	if err != nil {
@@ -120,6 +105,7 @@ func (c *Client) NewHttpRequest(method string, requestUrl string, requestBody in
 	return httpRequest, nil
 }
 
+// HttpClientDo calls the API with the specified http.Request and returns an error if the status code was not 2xx.
 func (c *Client) HttpClientDo(httpRequest *http.Request) (httpResponse *http.Response, err error) {
 	httpResponse, err = c.httpClient.Do(httpRequest)
 	if err != nil {
@@ -133,6 +119,9 @@ func (c *Client) HttpClientDo(httpRequest *http.Request) (httpResponse *http.Res
 	return httpResponse, nil
 }
 
+// getAuthorizationHeader calculates an HMAC with the specified values for method, url and body. If the client has been
+// created without the client.WithHmac option, the api secret will be used for authentication. Returns the
+// HTTP authorization header as a string.
 func (c *Client) getAuthorizationHeader(method string, url *url.URL, body *bytes.Buffer) (authHeader string) {
 	if c.hmacApiKeyId != "" {
 		hmac := &HmacMessageData{
@@ -149,8 +138,10 @@ func (c *Client) getAuthorizationHeader(method string, url *url.URL, body *bytes
 	return authHeader
 }
 
+// decodeHttpResponse decodes the httpResponse into the given responseType.
 func (c *Client) decodeHttpResponse(httpResponse *http.Response, responseType interface{}, ctxLogger *log.Entry) (err error) {
 	responseTypeName := reflect.TypeOf(responseType).String()
+	defer httpResponse.Body.Close()
 	body, err := ioutil.ReadAll(httpResponse.Body)
 	if err != nil {
 		return errors.Wrap(err, "failed to read http response body")
@@ -168,6 +159,9 @@ func (c *Client) decodeHttpResponse(httpResponse *http.Response, responseType in
 	return nil
 }
 
+// Request is used to make a request to the API. The action parameter should contain a string that indicates which
+// action is currently performed. Parameters method, requestUrl and requestBody are used to construct the request.
+// The body of the API response will be decoded into the given responseType. On error, returns an ApiError.
 func (c *Client) Request(action string, method string, requestUrl string, requestBody interface{}, responseType interface{}) *ApiError {
 	ctxLogger := c.log.WithFields(log.Fields{
 		"action": action,

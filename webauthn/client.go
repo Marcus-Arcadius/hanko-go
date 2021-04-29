@@ -1,3 +1,4 @@
+// Package webauthn contains webauthn-specific functions to establish communication with the Hanko Authentication API
 package webauthn
 
 import (
@@ -7,127 +8,142 @@ import (
 	"net/http"
 )
 
+type urlPath string
+
+const (
+	pathWebauthnBase             urlPath = "webauthn"
+	pathRegistrationInitialize   urlPath = "registration/initialize"
+	pathRegistrationFinalize     urlPath = "registration/finalize"
+	pathAuthenticationInitialize urlPath = "authentication/initialize"
+	pathAuthenticationFinalize   urlPath = "authentication/finalize"
+	pathTransactionInitialize    urlPath = "transaction/initialize"
+	pathTransactionFinalize      urlPath = "transaction/finalize"
+	pathCredentials              urlPath = "credentials"
+)
+
+// Client wraps a basic client.Client and provides methods for registration, authentication and webauthn
+// credential management (i.e. credential retrieval, update, and deletion).
 type Client struct {
-	*hankoClient.Client
+	client *hankoClient.Client // the base client.Client to be extended by this package
 }
 
-// Returns a Client give it the base url e.g. https://api.hanko.io and your API Secret
-func NewClient(baseUrl string, secret string, opts ...hankoClient.Option) (client *Client) {
-	return &Client{Client: hankoClient.NewClient(baseUrl, secret, opts...)}
+// NewClient creates a new webauthn.Client. Provide the baseUrl of the Hanko Authentication API server and your API
+// secret in order to make authenticated requests to the API.
+//
+// You can obtain API keys and the API's baseUrl through the Hanko Console (https://console.hanko.io).
+// To create API keys (an API Key ID, API secret pair) in the console, log in, select your relying party and go to
+// "General Settings" -> "ApiKeys" -> "Add new". Make sure you provide an API secret in when constructing the Client
+// via NewClient() accordingly.
+//
+// Note: It is recommended to use HMAC authorization. See the Client.WithHmac option for more details.
+func NewClient(baseUrl string, secret string) *Client {
+	return &Client{client: hankoClient.NewClient(baseUrl, secret)}
 }
 
-func (c *Client) GetUrl() (url string) {
-	return fmt.Sprintf("%s/%s/webauthn", c.BaseUrl, c.ApiVersion)
+// getUrl constructs an returns a full API WebAuthn request URL, e.g. "https://{baseUrl}/{apiVersion}/webauthn/{urlPath}"
+// using a given urlPath.
+func (c *Client) getUrl(p urlPath) string {
+	return fmt.Sprintf("%s/%s/%s", c.client.GetUrl(), pathWebauthnBase, p)
 }
 
-func (c *Client) GetRegistrationUrl() (url string) {
-	return c.GetUrl() + "/registration"
-}
-
-func (c *Client) GetAuthenticationUrl() (url string) {
-	return c.GetUrl() + "/authentication"
-}
-
-func (c *Client) GetTransactionUrl() (url string) {
-	return c.GetUrl() + "/transaction"
-}
-
-func (c *Client) GetCredentialsUrl() (url string) {
-	return c.GetUrl() + "/credentials"
-}
-
-// WEBAUTHN ------------------------------------------------------------------------------------------------------------
-
-// InitializeRegistration initiates the Registration of an Authenticator. Pass the result from the Hanko API to the
-// WebAuthn API of the Browser to get it signed. The result has to be send back with FinalizeWebauthnOperation to finalize
-// the Registration Flow.
+// InitializeRegistration initializes the registration of a new credential using a RegistrationInitializationRequest.
+// On successful initialization, the Hanko Authentication API returns a RegistrationInitializationResponse. Send
+// the response to your client application in order to pass it to the browser's WebAuthn API's
+// navigator.credentials.create() function.
 func (c *Client) InitializeRegistration(requestBody *RegistrationInitializationRequest) (response *RegistrationInitializationResponse, err *hankoClient.ApiError) {
 	response = &RegistrationInitializationResponse{}
-	requestUrl := c.GetRegistrationUrl() + "/initialize"
-	err = c.Request("initialize webauthn registration", http.MethodPost, requestUrl, requestBody, response)
+	requestUrl := c.getUrl(pathRegistrationInitialize)
+	err = c.client.Request("initialize webauthn registration", http.MethodPost, requestUrl, requestBody, response)
 	return response, err
 }
 
-// FinalizeRegistration Is the last step to either Register or Authenticate an WebAuthn do. Pass the result of
-// the WebAuthn API call of the Browser to this method.
+// FinalizeRegistration finalizes the registration request initiated by the InitializeRegistration method. Provide a
+// RegistrationFinalizationRequest which represents the result of calling the browser's WebAuthn API's
+// navigator.credentials.create() function.
 func (c *Client) FinalizeRegistration(requestBody *RegistrationFinalizationRequest) (response *RegistrationFinalizationResponse, err *hankoClient.ApiError) {
 	response = &RegistrationFinalizationResponse{}
-	requestUrl := c.GetRegistrationUrl() + "/finalize"
-	err = c.Request("finalize webauthn registration", http.MethodPost, requestUrl, requestBody, response)
+	requestUrl := c.getUrl(pathRegistrationFinalize)
+	err = c.client.Request("finalize webauthn registration", http.MethodPost, requestUrl, requestBody, response)
 	return response, err
 }
 
-// InitializeAuthentication initiates the Authentication Flow. Pass the challenge from the Hanko API to the
-// WebAuthn API of the Browser to get it signed. The result has to be send back with FinalizeWebauthnOperation to finalize
-// the Registration Flow.
+// InitializeAuthentication initializes an authentication with a registered credential using an
+// AuthenticationInitializationRequest. On successful initialization, the Hanko Authentication API returns a
+// AuthenticationInitializationResponse. Send the response to your client application in order to pass it to the
+// browser's WebAuthn API's navigator.credentials.get() function.
 func (c *Client) InitializeAuthentication(requestBody *AuthenticationInitializationRequest) (response *AuthenticationInitializationResponse, err *hankoClient.ApiError) {
 	response = &AuthenticationInitializationResponse{}
-	requestUrl := c.GetAuthenticationUrl() + "/initialize"
-	err = c.Request("initialize webauthn authentication", http.MethodPost, requestUrl, requestBody, response)
+	requestUrl := c.getUrl(pathAuthenticationInitialize)
+	err = c.client.Request("initialize webauthn authentication", http.MethodPost, requestUrl, requestBody, response)
 	return response, err
 }
 
-// FinalizeRegistration Is the last step to either Register or Authenticate an WebAuthn do. Pass the result of
-// the WebAuthn API call of the Browser to this method.
+// FinalizeAuthentication finalizes the authentication request initiated by the InitializeAuthentication method. Provide
+// a AuthenticationFinalizationRequest which represents the result of calling the browser's WebAuthn API's
+// navigator.credentials.get() function.
 func (c *Client) FinalizeAuthentication(requestBody *AuthenticationFinalizationRequest) (response *AuthenticationFinalizationResponse, err *hankoClient.ApiError) {
 	response = &AuthenticationFinalizationResponse{}
-	requestUrl := c.GetAuthenticationUrl() + "/finalize"
-	err = c.Request("finalize webauthn authentication", http.MethodPost, requestUrl, requestBody, response)
+	requestUrl := c.getUrl(pathAuthenticationFinalize)
+	err = c.client.Request("finalize webauthn authentication", http.MethodPost, requestUrl, requestBody, response)
 	return response, err
 }
 
-// InitializeTransaction initiates the Authentication Flow. Pass the challenge from the Hanko API to the
-// WebAuthn API of the Browser to get it signed. The result has to be send back with FinalizeWebauthnOperation to finalize
-// the Registration Flow.
+// InitializeTransaction initiates a transaction. A transaction operation is analogous to the authentication operation,
+// with the main difference being that a transaction context must be provided in the form of a string. This value will
+// become part of the challenge an authenticator signs over during the operation.
+//
+// Initialize a transaction using a TransactionInitializationRequest. On successful initialization, the Hanko
+// Authentication API returns a TransactionInitializationResponse. Send the response to your client application in order
+// to pass it to the browser's WebAuthn API's navigator.credentials.get() function.
 func (c *Client) InitializeTransaction(requestBody *TransactionInitializationRequest) (response *TransactionInitializationResponse, err *hankoClient.ApiError) {
 	response = &TransactionInitializationResponse{}
-	requestUrl := c.GetTransactionUrl() + "/initialize"
-	err = c.Request("initialize webauthn transaction", http.MethodPost, requestUrl, requestBody, response)
+	requestUrl := c.getUrl(pathTransactionInitialize)
+	err = c.client.Request("initialize webauthn transaction", http.MethodPost, requestUrl, requestBody, response)
 	return response, err
 }
 
-// FinalizeRegistration Is the last step to either Register or Authenticate an WebAuthn do. Pass the result of
-// the WebAuthn API call of the Browser to this method.
+// FinalizeTransaction finalizes the transaction request initiated by the InitializeTransaction method. Provide
+// a TransactionFinalizationRequest which represents the result of calling of the browser's WebAuthn API's
+// navigator.credentials.get() function.
 func (c *Client) FinalizeTransaction(requestBody *TransactionFinalizationRequest) (response *TransactionFinalizationResponse, err *hankoClient.ApiError) {
 	response = &TransactionFinalizationResponse{}
-	requestUrl := c.GetTransactionUrl() + "/finalize"
-	err = c.Request("finalize webauthn transaction", http.MethodPost, requestUrl, requestBody, response)
+	requestUrl := c.getUrl(pathTransactionFinalize)
+	err = c.client.Request("finalize webauthn transaction", http.MethodPost, requestUrl, requestBody, response)
 	return response, err
 }
 
-// ListCredentials
-// TODO: Docs (pagination defaults...)
+// ListCredentials returns a list of Credential. Filter by userId and paginate results using a CredentialQuery.
+// The value for PageSize defaults to 10 and the value for Page to 1.
 func (c *Client) ListCredentials(credentialQuery *CredentialQuery) (response *[]Credential, err *hankoClient.ApiError) {
 	response = &[]Credential{}
-	requestUrl := c.GetCredentialsUrl()
-
+	requestUrl := c.getUrl(pathCredentials)
 	values, _ := query.Values(credentialQuery)
 	if values != nil {
 		requestUrl += "?" + values.Encode()
 	}
-
-	err = c.Request("list webauthn credentials", http.MethodGet, requestUrl, nil, response)
+	err = c.client.Request("list webauthn credentials", http.MethodGet, requestUrl, nil, response)
 	return response, err
 }
 
-// TODO: Docs
+// GetCredential returns the Credential with the specified credentialId.
 func (c *Client) GetCredential(credentialId string) (response *Credential, err *hankoClient.ApiError) {
 	response = &Credential{}
-	requestUrl := fmt.Sprintf("%s/%s", c.GetCredentialsUrl(), credentialId)
-	err = c.Request("get webauthn credential", http.MethodGet, requestUrl, nil, response)
+	requestUrl := fmt.Sprintf("%s/%s", c.getUrl(pathCredentials), credentialId)
+	err = c.client.Request("get webauthn credential", http.MethodGet, requestUrl, nil, response)
 	return response, err
 }
 
-// TODO: Docs
+// DeleteCredential deletes the Credential with the specified credentialId.
 func (c *Client) DeleteCredential(credentialId string) (err *hankoClient.ApiError) {
-	requestUrl := fmt.Sprintf("%s/%s", c.GetCredentialsUrl(), credentialId)
-	return c.Request("delete webauthn credential", http.MethodDelete, requestUrl, nil, nil)
+	requestUrl := fmt.Sprintf("%s/%s", c.getUrl(pathCredentials), credentialId)
+	return c.client.Request("delete webauthn credential", http.MethodDelete, requestUrl, nil, nil)
 }
 
-// TODO: Docs
+// UpdateCredential updates the Credential with the specified credentialId. Provide a CredentialUpdateRequest with the
+// updated data. Currently, you can only update the name of a Credential.
 func (c *Client) UpdateCredential(credentialId string, requestBody *CredentialUpdateRequest) (response *Credential, err *hankoClient.ApiError) {
 	response = &Credential{}
-	requestUrl := fmt.Sprintf("%s/%s", c.GetCredentialsUrl(), credentialId)
-	err = c.Request("update webauthn credential", http.MethodPut, requestUrl, requestBody, response)
+	requestUrl := fmt.Sprintf("%s/%s", c.getUrl(pathCredentials), credentialId)
+	err = c.client.Request("update webauthn credential", http.MethodPut, requestUrl, requestBody, response)
 	return response, err
 }
