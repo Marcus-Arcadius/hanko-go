@@ -159,7 +159,7 @@ func NewAuthenticationInitializationRequest() (request *AuthenticationInitializa
 	return request
 }
 
-// WithUser allows you to set an AuthenticationInitializationUser which is nessaccery to authenticate with non-resident
+// WithUser allows you to set an AuthenticationInitializationUser which is necessary to authenticate with non-resident
 // keys.
 func (request *AuthenticationInitializationRequest) WithUser(user AuthenticationInitializationUser) *AuthenticationInitializationRequest {
 	request.User = user.User
