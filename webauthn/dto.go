@@ -1,8 +1,10 @@
 package webauthn
 
 import (
+	"encoding/json"
 	hankoClient "github.com/teamhanko/hanko-sdk-golang/client"
 	"github.com/teamhanko/webauthn/protocol"
+	"io"
 	"time"
 )
 
@@ -128,6 +130,15 @@ type RegistrationFinalizationRequest struct {
 	protocol.CredentialCreationResponse
 }
 
+// ParseRegistrationFinalizationRequest decodes the content of the specified io.Reader into a
+// RegistrationFinalizationRequest.
+func ParseRegistrationFinalizationRequest(requestBody io.Reader) (request *RegistrationFinalizationRequest, err error) {
+	request = &RegistrationFinalizationRequest{}
+	dec := json.NewDecoder(requestBody)
+	err = dec.Decode(request)
+	return request, err
+}
+
 // RegistrationFinalizationResponse is the response when the credential registration was successful.
 type RegistrationFinalizationResponse struct {
 	User       hankoClient.User `json:"user"`
@@ -159,7 +170,7 @@ func NewAuthenticationInitializationRequest() (request *AuthenticationInitializa
 	return request
 }
 
-// WithUser allows you to set an AuthenticationInitializationUser which is nessaccery to authenticate with non-resident
+// WithUser allows you to set an AuthenticationInitializationUser which is necessary to authenticate with non-resident
 // keys.
 func (request *AuthenticationInitializationRequest) WithUser(user AuthenticationInitializationUser) *AuthenticationInitializationRequest {
 	request.User = user.User
@@ -202,6 +213,15 @@ type AuthenticationInitializationResponse struct {
 // See also: https://www.w3.org/TR/webauthn-2/#publickeycredential
 type AuthenticationFinalizationRequest struct {
 	protocol.CredentialAssertionResponse
+}
+
+// ParseAuthenticationFinalizationRequest decodes the content of the specified io.Reader into a
+// AuthenticationFinalizationRequest.
+func ParseAuthenticationFinalizationRequest(reader io.Reader) (request *AuthenticationFinalizationRequest, err error) {
+	request = &AuthenticationFinalizationRequest{}
+	dec := json.NewDecoder(reader)
+	err = dec.Decode(request)
+	return request, err
 }
 
 // AuthenticationFinalizationResponse is the response when the authentication was successful.
