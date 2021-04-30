@@ -154,8 +154,15 @@ type AuthenticationInitializationRequest struct {
 }
 
 // NewAuthenticationInitializationRequest creates a new AuthenticationInitializationRequest.
-func NewAuthenticationInitializationRequest(user AuthenticationInitializationUser) (request *AuthenticationInitializationRequest) {
-	request = &AuthenticationInitializationRequest{User: user.User}
+func NewAuthenticationInitializationRequest() (request *AuthenticationInitializationRequest) {
+	request = &AuthenticationInitializationRequest{}
+	return request
+}
+
+// WithUser allows you to set an AuthenticationInitializationUser which is nessaccery to authenticate with non-resident
+// keys.
+func (request *AuthenticationInitializationRequest) WithUser(user AuthenticationInitializationUser) *AuthenticationInitializationRequest {
+	request.User = user.User
 	return request
 }
 
