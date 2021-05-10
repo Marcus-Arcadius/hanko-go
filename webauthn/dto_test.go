@@ -58,10 +58,10 @@ func TestWebauthn_NewAuthenticationInitializationUser(t *testing.T) {
 		},
 		{
 			name: "init object with options",
-			test: NewAuthenticationInitializationUser("id").WithName("name"),
+			test: NewAuthenticationInitializationUser("id"),
 			expected: AuthenticationInitializationUser{User: client.User{
 				ID:          "id",
-				Name:        "name",
+				Name:        "",
 				DisplayName: "",
 			}},
 		},
@@ -176,7 +176,7 @@ func TestWebauthn_NewAuthenticationInitializationRequest(t *testing.T) {
 	}{
 		{
 			name: "init object",
-			test: NewAuthenticationInitializationRequest(NewAuthenticationInitializationUser("id")),
+			test: NewAuthenticationInitializationRequest().WithUser(NewAuthenticationInitializationUser("id")),
 			expected: &AuthenticationInitializationRequest{
 				User: client.User{
 					ID:          "id",
@@ -191,7 +191,7 @@ func TestWebauthn_NewAuthenticationInitializationRequest(t *testing.T) {
 		},
 		{
 			name: "init object with options",
-			test: NewAuthenticationInitializationRequest(NewAuthenticationInitializationUser("id")).
+			test: NewAuthenticationInitializationRequest().WithUser(NewAuthenticationInitializationUser("id")).
 				WithUserVerification(VerificationDiscouraged).WithAuthenticatorAttachment(CrossPlatform),
 			expected: &AuthenticationInitializationRequest{
 				User: client.User{
