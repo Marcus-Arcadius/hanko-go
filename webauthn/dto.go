@@ -41,12 +41,6 @@ func NewAuthenticationInitializationUser(id string) AuthenticationInitialization
 	return AuthenticationInitializationUser{hankoClient.User{ID: id}}
 }
 
-// WithName allows you to set the user name.
-func (user AuthenticationInitializationUser) WithName(name string) AuthenticationInitializationUser {
-	user.Name = name
-	return user
-}
-
 // RegistrationInitializationRequest is used to initialize a credential registration operation.
 type RegistrationInitializationRequest struct {
 	User    hankoClient.User                         `json:"user"`
