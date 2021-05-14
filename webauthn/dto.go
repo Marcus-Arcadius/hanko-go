@@ -334,6 +334,9 @@ type Credential struct {
 
 	// Representation of the authenticator used for registering the credential.
 	Authenticator *Authenticator `json:"authenticator,omitempty"`
+
+	// Representation of the user who registered the credential.
+	User hankoClient.User `json:"user"`
 }
 
 // CredentialUpdateRequest is used to update an existing credential.
