@@ -19,7 +19,7 @@ This package is maintained by [Hanko](https://hanko.io).
 
 ## Introduction
 This repository contains an API client that lets you communicate with the
-[Hanko Authentication API](https://docs.hanko.io/docs/introduction)
+[Hanko Authentication API](https://docs.hanko.io/overview)
 to easily integrate [FIDO®](https://fidoalliance.org)-based authentication into your web application written in
 [Go](https://golang.org).
 
@@ -49,7 +49,7 @@ relying party, which also spins up a new Hanko Authentication instance (it's fre
 out). To connect the client you need the
 API URL of your instance, and it is also necessary to create a new API key in the settings of your relying party to
 authenticate the client. For further information, see
-[Getting started](https://docs.hanko.io/docs/gettingstarted/account-setup#generate-an-api-key).
+[Getting started](https://docs.hanko.io/gettingstarted).
 
 Once your instance is operational, and you obtained the API key (Key-ID and a secret) from the console, provide the
 Key-ID via the [`WithHmac`](https://pkg.go.dev/github.com/teamhanko/hanko-sdk-golang/webauthn#Client.WithHmac) option 
@@ -188,7 +188,7 @@ the [Quick Start App](https://github.com/teamhanko/hanko-webauthn-quickstart-gol
 
 In these examples, we will develop a small HTTP API that will be able to register and authenticate  with
 WebAuthn credentials using just a few lines of code. We will see how to communicate
-with the [Hanko Authentication API](https://docs.hanko.io/docs/introduction) and exchange data with the
+with the [Hanko Authentication API](https://docs.hanko.io/overview) and exchange data with the
 [WebAuthn Authentication API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Authentication_API).
 
 The comments in the code samples below often mention options you can use, they are not explained in this place.
@@ -423,10 +423,6 @@ authentication was successful the LastUsed value of the credential should change
 or [`ListCredentials`](https://pkg.go.dev/github.com/teamhanko/hanko-sdk-golang/webauthn#Client.ListCredentials).
 
 To monitor the usage of your relying party you can use the dashboard in the [Hanko Console](https://console.hanko.io).
-
-In these examples no aspects of frontend design have been covered, please check out the
-[guides](https://docs.hanko.io/docs/guides/augment-flows), which will give you an idea how FIDO2/WebAuthn affects the 
-user experience and how you can build your frontend around the Hanko Authentication API. 
 
 ## Support
 
