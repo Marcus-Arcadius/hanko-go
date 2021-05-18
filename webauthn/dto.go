@@ -135,8 +135,7 @@ func ParseRegistrationFinalizationRequest(requestBody io.Reader) (request *Regis
 
 // RegistrationFinalizationResponse is the response when the credential registration was successful.
 type RegistrationFinalizationResponse struct {
-	User       hankoClient.User `json:"user"`
-	Credential *Credential      `json:"credential"`
+	Credential Credential `json:"credential"`
 }
 
 // Authenticator holds information about the authenticator associated with a registered credential.
@@ -220,7 +219,7 @@ func ParseAuthenticationFinalizationRequest(reader io.Reader) (request *Authenti
 
 // AuthenticationFinalizationResponse is the response when the authentication was successful.
 type AuthenticationFinalizationResponse struct {
-	User hankoClient.User `json:"user"`
+	Credential Credential `json:"credential"`
 }
 
 // TransactionInitializationRequest is used to initialize a transaction operation.
