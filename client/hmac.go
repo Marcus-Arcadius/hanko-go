@@ -1,4 +1,4 @@
-package hankoApiClient
+package client
 
 import (
 	"crypto/hmac"
@@ -20,16 +20,15 @@ type HmacMessageData struct {
 }
 
 type HmacJson struct {
-	ApiKeyId	string `json:"apiKeyId"`
-	Time		string `json:"time"`
-	Nonce		string `json:"nonce"`
-	Signature	string `json:"signature"`
+	ApiKeyId  string    `json:"apiKeyId"`
+	Time      time.Time `json:"time"`
+	Nonce     string    `json:"nonce"`
+	Signature string    `json:"signature"`
 }
 
 func CalculateHmac(messageData *HmacMessageData) string {
-	date := time.Now().UTC().Format("2006-01-02T15:04:05.999Z")
+	date := time.Now().UTC()
 	nonce := uuid.New().String()
-
 	message := fmt.Sprintf("%s:%s:%s:%s:%s",
 		messageData.apiKeyId,
 		date,
@@ -53,9 +52,7 @@ func CalculateHmac(messageData *HmacMessageData) string {
 		Nonce:     nonce,
 		Signature: signatureHex,
 	}
-
 	jsonRepresentation, _ := json.Marshal(hmacJson)
-
 	return base64.RawStdEncoding.EncodeToString(jsonRepresentation)
 }
 
