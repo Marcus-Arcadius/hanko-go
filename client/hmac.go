@@ -21,15 +21,15 @@ type HmacMessageData struct {
 
 type HmacJson struct {
 	ApiKeyId  string    `json:"apiKeyId"`
-	Time      time.Time `json:"time"`
+	Time      int64     `json:"time,string"`
 	Nonce     string    `json:"nonce"`
 	Signature string    `json:"signature"`
 }
 
 func CalculateHmac(messageData *HmacMessageData) string {
-	date := time.Now().UTC()
+	date := time.Now().Unix()
 	nonce := uuid.New().String()
-	message := fmt.Sprintf("%s:%s:%s:%s:%s",
+	message := fmt.Sprintf("%s:%d:%s:%s:%s",
 		messageData.apiKeyId,
 		date,
 		messageData.requestMethod,
