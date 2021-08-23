@@ -1,7 +1,7 @@
 package webauthn
 
 import (
-	"github.com/teamhanko/hanko-sdk-golang/client"
+	"github.com/teamhanko/hanko-go/client"
 	"reflect"
 	"testing"
 )
