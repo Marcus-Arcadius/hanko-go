@@ -1,4 +1,4 @@
-# `teamhanko/hanko-sdk-golang` Hanko API Client
+# `teamhanko/hanko-go` Hanko API Client
 
 This package is maintained by [Hanko](https://hanko.io).
 
@@ -26,18 +26,18 @@ to easily integrate [FIDO®](https://fidoalliance.org)-based authentication into
 ## Documentation
 
 - [Hanko Docs](https://docs.hanko.io) website
-- Hanko API Client [code documentation](https://pkg.go.dev/github.com/teamhanko/hanko-sdk-golang)
+- Hanko API Client [code documentation](https://pkg.go.dev/github.com/teamhanko/hanko-go)
 - Hanko Authentication [API reference](https://docs.hanko.io/api/webauthn)
 
 ## Installation
 1. Make sure [Go](https://golang.org) is installed.
 2. Install the Hanko API Client:
 ```shell
-$ go get -u github.com/teamhanko/hanko-sdk-golang/webauthn
+$ go get -u github.com/teamhanko/hanko-go/webauthn
 ```
 3. Import the client in your code:
 ```go
-import "github.com/teamhanko/hanko-sdk-golang/webauthn"
+import "github.com/teamhanko/hanko-go/webauthn"
 ```
 
 ## Usage
@@ -52,7 +52,7 @@ authenticate the client. For further information, see
 [Getting started](https://docs.hanko.io/gettingstarted).
 
 Once your instance is operational, and you obtained the API key (Key-ID and a secret) from the console, provide the
-Key-ID via the [`WithHmac`](https://pkg.go.dev/github.com/teamhanko/hanko-sdk-golang/webauthn#Client.WithHmac) option 
+Key-ID via the [`WithHmac`](https://pkg.go.dev/github.com/teamhanko/hanko-go/webauthn#Client.WithHmac) option 
 and pass the secret directly into the constructor:
 
 ```go
@@ -192,7 +192,7 @@ with the [Hanko Authentication API](https://docs.hanko.io/overview) and exchange
 [WebAuthn Authentication API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Authentication_API).
 
 The comments in the code samples below often mention options you can use, they are not explained in this place.
-Please see the [code documentation](https://pkg.go.dev/github.com/teamhanko/hanko-sdk-golang) for more details. If you
+Please see the [code documentation](https://pkg.go.dev/github.com/teamhanko/hanko-go) for more details. If you
 are not yet familiar with FIDO2/WebAuthn, be sure to visit [Hanko Docs](https://docs.hanko.io) first.
 
 Before we get started, [check](https://caniuse.com/#feat=webauthn) that you are using a FIDO-compatible browser and that you have an authentication device 
@@ -211,7 +211,7 @@ package example
 
 import (
     "github.com/gin-gonic/gin"
-    "github.com/teamhanko/hanko-sdk-golang/webauthn"
+    "github.com/teamhanko/hanko-go/webauthn"
 )
 
 func main() {
@@ -240,7 +240,7 @@ If you are wondering how to get the secret to create the API client, please read
 ### Example of how to register credentials
 
 You may set up a route to initialize the credential registration that first creates a
-[`RegistrationInitializationRequest`](https://pkg.go.dev/github.com/teamhanko/hanko-sdk-golang/webauthn#RegistrationInitializationRequest) 
+[`RegistrationInitializationRequest`](https://pkg.go.dev/github.com/teamhanko/hanko-go/webauthn#RegistrationInitializationRequest) 
 that contains the user information, as well as information about the authenticator
 to be used. Issue this request to the Hanko Authentication API using the Hanko API Client and pass the result to the
 browser:
@@ -281,11 +281,11 @@ r.POST("/registration_initialize", func(c *gin.Context) {
 })
 ```
 
-The [`RegistrationInitializationResponse`](https://pkg.go.dev/github.com/teamhanko/hanko-sdk-golang/webauthn#RegistrationInitializationResponse)
+The [`RegistrationInitializationResponse`](https://pkg.go.dev/github.com/teamhanko/hanko-go/webauthn#RegistrationInitializationResponse)
 returned by `/registration_initialize`, represents [`PublicKeyCredentialCreationOptions`](https://developer.mozilla.org/en-US/docs/Web/API/PublicKeyCredentialCreationOptions)
 to be used to sign the challenge via the [`navigator.credentials.create()`](https://developer.mozilla.org/en-US/docs/Web/API/CredentialsContainer/create) browser function. 
 A [`PublicKeyCredential`](https://developer.mozilla.org/en-US/docs/Web/API/PublicKeyCredential) will be returned, which is
-represented as a [`RegistrationFinalizationRequest`](https://pkg.go.dev/github.com/teamhanko/hanko-sdk-golang/webauthn#RegistrationFinalizationRequest).
+represented as a [`RegistrationFinalizationRequest`](https://pkg.go.dev/github.com/teamhanko/hanko-go/webauthn#RegistrationFinalizationRequest).
 Let´s set up a second route to verify the finalization request:
 
 ```go
@@ -312,7 +312,7 @@ the gesture, then we send the resulting [`PublicKeyCredential`](https://develope
 to `/registration_finalize` for verification.
 
 Please note that the WebAuthn Authentication API requires data that looks like JSON but contains binary data, represented as
-ArrayBuffers that needs to be encoded. So we can't pass the [`RegistrationInitializationResponse`](https://pkg.go.dev/github.com/teamhanko/hanko-sdk-golang/webauthn#RegistrationInitializationResponse)
+ArrayBuffers that needs to be encoded. So we can't pass the [`RegistrationInitializationResponse`](https://pkg.go.dev/github.com/teamhanko/hanko-go/webauthn#RegistrationInitializationResponse)
 directly as [`PublicKeyCredentialCreationOptions`](https://developer.mozilla.org/en-US/docs/Web/API/PublicKeyCredentialCreationOptions),
 but you can use the [Hanko WebAuthn Library](https://github.com/teamhanko/hanko-webauthn) 
 that wraps the WebAuthn Authentication API and encodes / decodes the data.
@@ -339,7 +339,7 @@ async register() {
 }
 ```
 
-At this point you might try calling the [`ListCredentials`](https://pkg.go.dev/github.com/teamhanko/hanko-sdk-golang/webauthn#Client.ListCredentials)
+At this point you might try calling the [`ListCredentials`](https://pkg.go.dev/github.com/teamhanko/hanko-go/webauthn#Client.ListCredentials)
 function to see if a new credential appears in the list.
 
 ### Example of how to handle the authentication
@@ -347,7 +347,7 @@ function to see if a new credential appears in the list.
 The authentication works in the same way as the registration. You'll need two routes to initialize and finalize the
 authentication, and they are also used to satisfy the WebAuthn Authentication API.
 
-With the [`AuthenticationInitializationRequest`](https://pkg.go.dev/github.com/teamhanko/hanko-sdk-golang/webauthn#AuthenticationInitializationRequest)
+With the [`AuthenticationInitializationRequest`](https://pkg.go.dev/github.com/teamhanko/hanko-go/webauthn#AuthenticationInitializationRequest)
 the user is optional. It does not need to be specified if a resident key is to be used. Otherwise, determine the
 `userId` and attach the user to the request: 
 
@@ -376,11 +376,11 @@ r.POST("/authentication_initialize", func(c *gin.Context) {
 
 The code to finalize the authentication is quite similar to finalizing a registration.
 
-The [`AuthenticationInitializationResponse`](https://pkg.go.dev/github.com/teamhanko/hanko-sdk-golang/webauthn#AuthenticationFinalizationResponse)
+The [`AuthenticationInitializationResponse`](https://pkg.go.dev/github.com/teamhanko/hanko-go/webauthn#AuthenticationFinalizationResponse)
 returned by `/authentication_initialize`, represents [`PublicKeyCredentialRequestOptions`](https://developer.mozilla.org/en-US/docs/Web/API/PublicKeyCredentialRequestOptions)
 to be used to sign the challenge via the [`navigator.credentials.get()`](https://developer.mozilla.org/en-US/docs/Web/API/CredentialsContainer/get)
 browser function. A [`PublicKeyCredential`](https://developer.mozilla.org/en-US/docs/Web/API/PublicKeyCredential) 
-will be returned, which is represented as an [`AuthenticationInitializationRequest`](https://pkg.go.dev/github.com/teamhanko/hanko-sdk-golang/webauthn#AuthenticationInitializationRequest).
+will be returned, which is represented as an [`AuthenticationInitializationRequest`](https://pkg.go.dev/github.com/teamhanko/hanko-go/webauthn#AuthenticationInitializationRequest).
 Let´s set up a new route to verify the finalization request:
 
 ```go
@@ -419,8 +419,8 @@ async authenticate() {
 ```
 
 If it works correctly, you should now be able to authenticate with your already registered credential. After the 
-authentication was successful the LastUsed value of the credential should change. To check this, call [`GetCredential`](https://pkg.go.dev/github.com/teamhanko/hanko-sdk-golang/webauthn#Client.GetCredential) 
-or [`ListCredentials`](https://pkg.go.dev/github.com/teamhanko/hanko-sdk-golang/webauthn#Client.ListCredentials).
+authentication was successful the LastUsed value of the credential should change. To check this, call [`GetCredential`](https://pkg.go.dev/github.com/teamhanko/hanko-go/webauthn#Client.GetCredential) 
+or [`ListCredentials`](https://pkg.go.dev/github.com/teamhanko/hanko-go/webauthn#Client.ListCredentials).
 
 To monitor the usage of your relying party you can use the dashboard in the [Hanko Console](https://console.hanko.io).
 
