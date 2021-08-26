@@ -2,7 +2,7 @@ package webauthn
 
 import (
 	"encoding/json"
-	hankoClient "github.com/teamhanko/hanko-sdk-golang/client"
+	hankoClient "github.com/teamhanko/hanko-go/client"
 	"github.com/teamhanko/webauthn/protocol"
 	"io"
 	"time"

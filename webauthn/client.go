@@ -4,7 +4,7 @@ package webauthn
 import (
 	"fmt"
 	"github.com/google/go-querystring/query"
-	hankoClient "github.com/teamhanko/hanko-sdk-golang/client"
+	hankoClient "github.com/teamhanko/hanko-go/client"
 	"net/http"
 )
 
