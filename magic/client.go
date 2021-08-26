@@ -2,7 +2,7 @@ package magic
 
 import (
 	"fmt"
-	hankoClient "github.com/teamhanko/hanko-sdk-golang/client"
+	hankoClient "github.com/teamhanko/hanko-go/client"
 	"net/http"
 )
 
