@@ -1,4 +1,4 @@
-package magic
+package passlink
 
 import (
 	"github.com/google/uuid"

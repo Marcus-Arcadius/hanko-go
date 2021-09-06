@@ -1,4 +1,4 @@
-package magic
+package passlink
 
 import (
 	log "github.com/sirupsen/logrus"
