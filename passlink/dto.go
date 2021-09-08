@@ -7,6 +7,7 @@ import (
 
 type LinkRequest struct {
 	Email        string `json:"email"`
+	Transport    string `json:"transport"`
 	Template     string `json:"template"`
 	TemplateLang string `json:"lang"`
 	TTL          string `json:"ttl"`
