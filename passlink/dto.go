@@ -25,7 +25,8 @@ type LinkRequest struct {
 	// and `Territory` is a two-letter ISO 3166-1 alpha-2 territory code.
 	// The `Language` part determines the requested language of the template that is used to construct the message
 	// sent to the user. If no template is found for the given language the API will return an
-	// error response.
+	// error response. Currently only german and english language templates are available, so only 'en_US', 'en_GB'
+	// and 'de_DE' will resolve to existing templates.
 	// The `Territory` part is used to appropriately format datetime strings in messages sent to the user. For these
 	// purposes the `locale` value should be one of the values listed above. If an unknown value is used
 	// or the `locale` attribute is omitted, it will default to `en_GB`.
@@ -81,7 +82,7 @@ func (r LinkRequest) WithTimezone(timezone string) LinkRequest {
 	return r
 }
 
-// WithSalutation allows you to set a custom LinkRequest.Salutation to use in the message sent to the user
+// WithSalutation allows you to set a custom LinkRequest.Salutation to use in the message sent to the user.
 func (r LinkRequest) WithSalutation(salutation string) LinkRequest {
 	r.Salutation = salutation
 	return r
