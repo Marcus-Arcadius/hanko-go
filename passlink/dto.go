@@ -12,7 +12,7 @@ type LinkRequest struct {
 	UserID     string `json:"user_id"`
 
 	// Determines the communication channel through which Passlinks are delivered to the user.
-	// Currently, only `email` is supported.
+	// Currently, only "email" is supported.
 	Transport  string `json:"transport"`
 
 	// The recipient address the message containing the Passlink should be sent to
@@ -21,38 +21,38 @@ type LinkRequest struct {
 	// The name of the template to use for the message containing the Passlink sent to the user
 	Template   string `json:"template"`
 
-	// Locale string of the form `Language_Territory` where `Language` is a two-letter ISO 639-1 language code,
-	// and `Territory` is a two-letter ISO 3166-1 alpha-2 territory code.
-	// The `Language` part determines the requested language of the template that is used to construct the message
+	// Locale string of the form "Language_Territory" where "Language" is a two-letter ISO 639-1 language code,
+	// and "Territory" is a two-letter ISO 3166-1 alpha-2 territory code.
+	// The "Language" part determines the requested language of the template that is used to construct the message
 	// sent to the user. If no template is found for the given language the API will return an
-	// error response. Currently only german and english language templates are available, so only 'en_US', 'en_GB'
-	// and 'de_DE' will resolve to existing templates.
-	// The `Territory` part is used to appropriately format datetime strings in messages sent to the user. For these
-	// purposes the `locale` value should be one of the values listed above. If an unknown value is used
-	// or the `locale` attribute is omitted, it will default to `en_GB`.
+	// error response. Currently only german and english language templates are available, so only "en_US", "en_GB"
+	// and "de_DE" will resolve to existing templates.
+	// The "Territory" part is used to appropriately format datetime strings in messages sent to the user. For these
+	// purposes the "locale" value should be one of the values listed above. If an unknown value is used
+	// or the "locale" attribute is omitted, it will default to "en_GB".
 	Locale     string `json:"locale"`
 
-	// Timezone name of the form `Area/Location` as defined in the IANA Time Zone Database.
+	// Timezone name of the form "Area/Location" as defined in the IANA Time Zone Database.
 	// If provided, it is used to appropriately format datetime strings (e.g. the expiration date
-	// of a Passlink) in messages sent to the user. Defaults to `UTC` if the given timezone name
+	// of a Passlink) in messages sent to the user. Defaults to "UTC" if the given timezone name
 	// cannot be resolved.
 	Timezone   string `json:"timezone"`
 
 	// The salutation to use in the Passlink message. If omitted, a default salutation as configured for the
-	// given template (see `template` attribute) and language (see `locale` attribute) will be used.
+	// given template (see `template` attribute) and language (see "locale" attribute) will be used.
 	Salutation string `json:"salutation"`
 
 	// Determines how long the Passlink should be valid. Must be a duration string consisting of a sequence of decimal
 	// numbers and a unit suffix. Valid time units are "ns", "us" (or "µs"), "ms", "s", "m", "h". If omitted, defaults
-	// to 15m.
+	// to "15m".
 	TTL        string `json:"ttl"`
 
-	// The relying party URL to redirect to after a user has confirmed (clicked) a Passlink. Must be
+	// The relying party URL to redirect to after a user has confirmed ("clicked") a Passlink. Must be
 	// a URL that has been configured by the relying party as a valid redirect URL in the Hanko Console.
 	RedirectTo string `json:"redirect_to"`
 }
 
-// NewEmailLinkRequest constructs a new LinkRequest for the given userId and recipient email address. The transport
+// NewEmailLinkRequest constructs a new LinkRequest for the given "userId" and "recipient" email address. The transport
 // is automatically set to "email".
 func NewEmailLinkRequest(userId string, recipient string) LinkRequest {
 	return LinkRequest{

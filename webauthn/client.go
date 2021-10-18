@@ -1,4 +1,5 @@
-// Package webauthn contains webauthn-specific functions to establish communication with the Hanko Authentication API
+// Package webauthn provides core definitions supporting passwordless authentication through the Hanko Authentication API
+// using FIDO2/WebAuthn.
 package webauthn
 
 import (
@@ -32,7 +33,7 @@ type Client struct {
 //
 // You can obtain API keys and the API's baseUrl through the Hanko Console (https://console.hanko.io).
 // To create API keys (an API Key ID, API secret pair) in the console, log in, select your relying party and go to
-// "General Settings" -> "ApiKeys" -> "Add new". Make sure you provide an API secret in when constructing the Client
+// "General Settings" -> "ApiKeys" -> "Add new". Make sure you provide an API secret when constructing the Client
 // via NewClient() accordingly.
 //
 // Note: It is recommended to use HMAC authorization. See the Client.WithHmac option for more details.

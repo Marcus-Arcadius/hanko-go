@@ -7,21 +7,29 @@ This package is maintained by [Hanko](https://hanko.io).
 1. [Documentation](#documentation)
 1. [Installation](#installation)
 1. [Usage](#usage)
-    1. [Create a new Hanko API Client](#create-a-new-hanko-api-client)
-    1. [Register a WebAuthn credential](#register-a-webauthn-credential)
-    1. [Authenticate with a registered WebAuthn credential](#authenticate-with-a-registered-webauthn-credential)
-    1. [Making Transactions](#making-transactions)
-    1. [Credential Management](#credential-management)
+    1. [WebAuthn usage](#webauthn-usage)
+        1. [Create a new Hanko API WebAuthn Client](#create-a-new-hanko-api-webauthn-client)
+        1. [Register a WebAuthn credential](#register-a-webauthn-credential)
+        1. [Authenticate with a registered WebAuthn credential](#authenticate-with-a-registered-webauthn-credential)
+        1. [Making Transactions](#making-transactions)
+        1. [Credential Management](#credential-management)
+    1. [Passlink usage](#passlink-usage)
+        1. [Create a new Hanko API Passlink Client](#create-a-new-hanko-api-passlink-client)
+        1. [Passlink initialization](#passlink-initialization)
+        1. [Passlink confirmation](#passlink-confirmation)
+        1. [Passlink finalization](#passlink-finalization)
 1. [Examples](#examples)
-    1. [Example of how to register credentials](#example-of-how-to-register-credentials)
-    1. [Example of how to handle the authentication](#example-of-how-to-handle-the-authentication)
+    1. [WebAuthn examples](#webauthn-examples)
+        1. [Example of how to register credentials](#example-of-how-to-register-credentials)
+        1. [Example of how to handle the authentication](#example-of-how-to-handle-the-authentication)
+    1. [Passlink examples](#passlink-examples)
 1. [Support](#support)
 
 ## Introduction
-This repository contains an API client that lets you communicate with the
+This repository contains an API client written in [Go](https://golang.org) that lets you communicate with the
 [Hanko Authentication API](https://docs.hanko.io/overview)
-to easily integrate [FIDO®](https://fidoalliance.org)-based authentication into your web application written in
-[Go](https://golang.org).
+to enable building passwordless authentication based on
+[FIDO®](https://fidoalliance.org)/[WebAuthn](https://www.w3.org/TR/webauthn) or Passlinks (a.k.a. "login via email").
 
 ## Documentation
 
@@ -42,7 +50,9 @@ import "github.com/teamhanko/hanko-go/webauthn"
 
 ## Usage
 
-### Create a new Hanko API Client
+### WebAuthn usage
+
+#### Create a new Hanko API WebAuthn Client
 
 First you need to log into the [Hanko Console](https://console.hanko.io). The console allows you to create a new
 relying party, which also spins up a new Hanko Authentication instance (it's free, you can just try it 
@@ -59,13 +69,13 @@ and pass the secret directly into the constructor:
 var apiUrl string // e.g. "https://e7cd3792-dd57-4103-a6e3-4ac66fcd00f1.authentication.hanko.io"
 var secret string // e.g. "FxCcAWGTEnT2P6mFbnQW4U..."
 
-hanko = webauthn.NewClient(apiUrl, secret).
+hankoWebAuthn = webauthn.NewClient(apiUrl, secret).
     WithHmac(hmacApiKeyId). // e.g. "66dc69ec-67dc-4901-aab3-a2bf4927671e"
     WithHttpClient(httpClient). // use a customized http client
     WithLogger(logger) // use a customized logger
 ```
 
-### Register a WebAuthn credential
+#### Register a WebAuthn credential
 
 Please visit [Hanko Docs](https://docs.hanko.io) to learn how a registration ceremony works and also
 see the [example section](#examples) for a rough overview of how to utilize the client.
@@ -87,7 +97,7 @@ request = webauthn.NewRegistrationInitializationRequest(user).
     WithAuthenticatorSelection(authenticatorSelection).
     WithConveyancePreference(conveyancePreference) // e.g. "none", "indirect", "direct"
 
-response, err = hanko.InitializeRegistration(request)
+response, err = hankoWebAuthn.InitializeRegistration(request)
 ```
 Registration finalization:
 ```go
@@ -96,10 +106,10 @@ Registration finalization:
 // PublicKeyCredential, represented by a RegistrationFinalizationRequest.
 
 request, err = webauthn.ParseRegistrationFinalizationRequest(registrationFinalizationRequest)
-response, err = hanko.FinalizeRegistration(request)
+response, err = hankoWebAuthn.FinalizeRegistration(request)
 ```
 
-### Authenticate with a registered WebAuthn credential
+#### Authenticate with a registered WebAuthn credential
 
 Please visit [Hanko Docs](https://docs.hanko.io)  to learn how a authentication ceremony works and also
 see the [example section](#examples) for a rough overview of how to utilize the 
@@ -116,7 +126,7 @@ request = webauthn.NewAuthenticationInitializationRequest().
     WithUserVerification(userVerification).
     WithAuthenticatorAttachment(authenticatorAttachment)
 
-response, err = hanko.InitializeAuthentication(request)
+response, err = hankoWebAuthn.InitializeAuthentication(request)
 ```
 Authentication finalization:
 ```go
@@ -125,10 +135,10 @@ Authentication finalization:
 // PublicKeyCredential, represented by an AuthenticationFinalizationRequest.
 
 request, err = webauthn.ParseAuthenticationFinalizationRequest(authenticationFinalizationRequest)
-response, err = hanko.FinalizeAuthentication(request)
+response, err = hankoWebAuthn.FinalizeAuthentication(request)
 ```
 
-### Making Transactions
+#### Making Transactions
 
 A transaction is technically the equivalent of an authentication, with the difference that when initializing 
 a transaction, a `transactionText` can be included, which is also used for signing the challenge.
@@ -139,7 +149,7 @@ Transaction initialization:
 ```go
 request = webauthn.NewTransactionInitializationRequest().
 	WithTransaction(transactionText) // e.g. "Order #3242"
-response, err = hanko.InitializeTransaction(request)
+response, err = hankoWebAuthn.InitializeTransaction(request)
 ```
 Transaction finalization:
 ```go
@@ -148,10 +158,10 @@ Transaction finalization:
 // PublicKeyCredential, represented by a TransactionFinalizationRequest.
 
 request, err = webauthn.ParseTransactionFinalizationRequest(transactionFinalizationRequest)
-response, err = hanko.FinalizeTransaction(request)
+response, err = hankoWebAuthn.FinalizeTransaction(request)
 ```
 
-### Credential Management
+#### Credential Management
 
 Furthermore, the client offers the possibility to manage the registered credentials. If you create a productive 
 application, make sure that you do not make these functions publicly available. Always verify whether the actor is
@@ -161,15 +171,15 @@ allowed to modify the credential.
 var credentialId string // e.g. "AQohBypyLBrx8R_UO0cWQuu7hhRGv7bPRRGtbQLrjl..."
 
 // Get all details of the specified credential.
-credential, err = hanko.GetCredential(credentialId)
+credential, err = hankoWebAuthn.GetCredential(credentialId)
 
 // Update the name of a credential.
 updateRequest = webauthn.NewCredentialUpdateRequest().
 	WithName(newName) // e.g. "My Security Key"
-credential, err = hanko.UpdateCredential(credentialId, updateRequest)
+credential, err = hankoWebAuthn.UpdateCredential(credentialId, updateRequest)
 
 // Delete the specified credential.
-err = hanko.DeleteCredential(credentialId)
+err = hankoWebAuthn.DeleteCredential(credentialId)
 
 // Search for credentials.
 query = webauthn.NewCredentialQuery().
@@ -177,10 +187,88 @@ query = webauthn.NewCredentialQuery().
     WithPageSize(pageSize).
     WithPage(page)
 
-credentials, err = hanko.ListCredentials(query)
+credentials, err = hankoWebAuthn.ListCredentials(query)
 ```
 
+### Passlink usage
+
+The Hanko Authentication API offers Passlinks as another form passwordless authentication. Instead of using a password,
+the user simply clicks on a Passlink sent in an email or a message to login.
+
+Performing a Passlink based authentication flow involves: creation a Passlink client, initialization (i.e. 
+generation of Passlink and delivery of a message containing the Passlink to the user), confirmation through the user, and
+finalization of the Passlink.
+
+#### Create a new Hanko API Passlink Client
+
+Create an account with Hanko and log into the [Hanko Console](https://console.hanko.io). The console allows you to 
+create a new relying party, which also spins up a new Hanko Authentication instance (it's free, you can just try it
+out). To connect the client you need the
+API URL of your instance, and it is also necessary to create a new API key in the settings of your relying party to
+authenticate the client. For further information, see
+[Getting started](https://docs.hanko.io/gettingstarted).
+
+Once your instance is operational, and you obtained the API key (Key-ID and a secret) from the console, provide the
+Key-ID via the [`WithHmac`](https://pkg.go.dev/github.com/teamhanko/hanko-go/webauthn#Client.WithHmac) option
+and pass the secret directly into the constructor:
+
+```go
+var apiUrl string // e.g. "https://e7cd3792-dd57-4103-a6e3-4ac66fcd00f1.authentication.hanko.io"
+var secret string // e.g. "FxCcAWGTEnT2P6mFbnQW4U..."
+
+hankoPasslink = passlink.NewClient(apiUrl, secret).
+    WithHmac(hmacApiKeyId). // e.g. "66dc69ec-67dc-4901-aab3-a2bf4927671e"
+    WithHttpClient(httpClient). // use a customized http client
+    WithLogger(logger) // use a customized logger
+```
+
+#### Passlink initialization
+
+Initialize the Passlink using a LinkRequest:
+
+```go
+request := &passlink.LinkRequest{
+    // The ID of the user to initialize a Passlink for. Solely used as a correlation identifier, since the Hanko
+    // API itself does not manage user data. Must be provided by the client (relying party).
+    UserID:     "d390f01d-782c-4fea-854a-abedfd5860c0",
+    // Determines the communication channel through which Passlinks are delivered to the user.
+    // Currently, only `email` is supported.
+    Transport:  "email",
+    // The recipient address the message containing the Passlink should be sent to
+    Email:      "john.doe@example.com",
+    // The relying party URL to redirect to after a user has confirmed (clicked) a Passlink (see "Passlink confirmation").
+    // Must be a URL that has been configured by the relying party as a valid redirect URL in the Hanko Console.
+    RedirectTo: "https://example.com/passlink/finalize"
+  }
+
+passlink, apiErr := hankoPasslink.InitializePasslink(passlinkRequest)
+```
+
+For an in-depth description of available fields on the LinkRequest, please consult the LinkRequest code documentation
+or visit our [API reference](https://docs.hanko.io/api/passlink#operation/passlinkInit).
+
+#### Passlink confirmation
+
+Confirmation consists of the user clicking the link delivered in the message during initialization.
+Clicking the link will redirect the user to a previously configured target in the scope of the relying party 
+application the user wants to authentication with, i.e. the relying party application. This redirect target finalizes
+the flow (see [Passlink finalization](#passlink-finalization)) and it must be implemented by the relying party.
+
+#### Passlink finalization
+
+As mentioned in [Passlink confirmation](#passlink-confirmation), the relying party must provide a handler that 
+finalizes the Passlink flow. The Hanko API appends the ID of the Passlink to finalize to the redirect
+URL after confirmation. Extract it and use it to finalize the Passlink flow with the Hanko API:
+
+```go
+passlink, apiErr := hankoPasslink.FinalizePasslink(linkId)
+```
+
+For a more complete implementation guide, please see the [Hanko Docs](https://docs.hanko.io/passlink/implementation).
+
 ## Examples
+
+### WebAuthn examples
 
 For demonstration purposes we're using the web application framework [Gin](https://github.com/gin-gonic/gin), just to
 give you an idea how you can integrate the Hanko API Client. If you are interested in a full working example, check out
@@ -237,7 +325,7 @@ func main() {
 If you are wondering how to get the secret to create the API client, please read the relevant 
 [section](#create-a-new-hanko-api-client).
 
-### Example of how to register credentials
+#### Example of how to register credentials
 
 You may set up a route to initialize the credential registration that first creates a
 [`RegistrationInitializationRequest`](https://pkg.go.dev/github.com/teamhanko/hanko-go/webauthn#RegistrationInitializationRequest) 
@@ -342,7 +430,7 @@ async register() {
 At this point you might try calling the [`ListCredentials`](https://pkg.go.dev/github.com/teamhanko/hanko-go/webauthn#Client.ListCredentials)
 function to see if a new credential appears in the list.
 
-### Example of how to handle the authentication
+#### Example of how to handle the authentication
 
 The authentication works in the same way as the registration. You'll need two routes to initialize and finalize the
 authentication, and they are also used to satisfy the WebAuthn Authentication API.
@@ -423,6 +511,10 @@ authentication was successful the LastUsed value of the credential should change
 or [`ListCredentials`](https://pkg.go.dev/github.com/teamhanko/hanko-go/webauthn#Client.ListCredentials).
 
 To monitor the usage of your relying party you can use the dashboard in the [Hanko Console](https://console.hanko.io).
+
+### Passlink examples
+
+For an in-depth Passlink example, please see the implementation guide in the [Hanko Docs](https://docs.hanko.io/passlink/implementation).
 
 ## Support
 
