@@ -237,7 +237,9 @@ request := &passlink.LinkRequest{
     // The recipient address the message containing the Passlink should be sent to
     Email:      "john.doe@example.com",
     // The relying party URL to redirect to after a user has confirmed (clicked) a Passlink (see "Passlink confirmation").
+    // Represents the handler implemented by the relying party that performs Passlink finalization.
     // Must be a URL that has been configured by the relying party as a valid redirect URL in the Hanko Console.
+    // Can be omitted in the initialization request if configured as a default redirect URL in the Hanko Console.
     RedirectTo: "https://example.com/passlink/finalize"
   }
 
@@ -250,15 +252,17 @@ or visit our [API reference](https://docs.hanko.io/api/passlink#operation/passli
 #### Passlink confirmation
 
 Confirmation consists of the user clicking the link delivered in the message during initialization.
-Clicking the link will redirect the user to a previously configured target in the scope of the relying party 
-application the user wants to authentication with, i.e. the relying party application. This redirect target finalizes
+Clicking the link confirms the Passlink by issuing a request to the Hanko Authentication API. The Hanko API then
+redirects the user to a previously configured target in the scope of the relying party 
+application the user wants to authentication with. This handler finalizes
 the flow (see [Passlink finalization](#passlink-finalization)) and it must be implemented by the relying party.
 
 #### Passlink finalization
 
 As mentioned in [Passlink confirmation](#passlink-confirmation), the relying party must provide a handler that 
-finalizes the Passlink flow. The Hanko API appends the ID of the Passlink to finalize to the redirect
-URL after confirmation. Extract it and use it to finalize the Passlink flow with the Hanko API:
+finalizes the Passlink flow (see also the `RedirectTo` attribute of the initialization request). The Hanko API appends the 
+ID of the Passlink to finalize to the redirect URL after confirmation. Extract it and use it to finalize the Passlink 
+flow with the Hanko API:
 
 ```go
 passlink, apiErr := hankoPasslink.FinalizePasslink(linkId)
